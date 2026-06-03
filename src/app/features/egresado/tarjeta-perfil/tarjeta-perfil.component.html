@@ -1,0 +1,31 @@
+@if (egresado()) {
+  <div class="perfil-card">
+    <div class="card-glow"></div>
+    <div class="avatar-wrapper">
+      <div class="perfil-avatar">
+        {{ egresado()?.nombre?.substring(0, 2) | uppercase }}
+      </div>
+    </div>
+    <div class="perfil-info">
+      <h3 class="perfil-name">{{ egresado()?.nombre }}</h3>
+      <span class="perfil-badge">Egresado Verificado</span>
+      
+      <div class="details-divider"></div>
+      
+      <div class="details-grid">
+        <div class="detail-item">
+          <span class="detail-label">Programa Académico</span>
+          <span class="detail-val">{{ egresado()?.carrera }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Año de Egreso</span>
+          <span class="detail-val">{{ egresado()?.anioGraduacion }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Documento Nacional (DNI)</span>
+          <span class="detail-val">{{ egresado()?.dni }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+}

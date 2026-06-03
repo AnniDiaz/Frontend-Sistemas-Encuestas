@@ -1,0 +1,103 @@
+.likert-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin: 1.5rem 0;
+  font-family: inherit;
+}
+
+.likert-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 480px;
+  gap: 0.75rem;
+  position: relative;
+}
+
+.likert-btn {
+  position: relative;
+  flex: 1;
+  aspect-ratio: 1;
+  max-width: 70px;
+  border-radius: 50%;
+  border: 2px solid var(--border-color, #e2e8f0);
+  background: var(--card-bg, #ffffff);
+  color: var(--text-muted, #64748b);
+  font-weight: 700;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.likert-btn:hover {
+  transform: translateY(-4px) scale(1.08);
+  border-color: var(--primary-light, #818cf8);
+  color: var(--primary-color, #4f46e5);
+  box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.1), 0 4px 6px -2px rgba(79, 70, 229, 0.05);
+}
+
+.likert-btn.active {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  border-color: #4f46e5;
+  color: #ffffff;
+  box-shadow: 0 10px 20px -3px rgba(79, 70, 229, 0.3), 0 4px 12px -2px rgba(79, 70, 229, 0.2);
+}
+
+/* Tooltip descriptor */
+.btn-desc-tooltip {
+  position: absolute;
+  bottom: -40px;
+  left: 50%;
+  transform: translateX(-50%) translateY(5px);
+  background: var(--tooltip-bg, #1e293b);
+  color: #ffffff;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  pointer-events: none;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.likert-btn:hover .btn-desc-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Helper labels under the buttons */
+.likert-labels {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 480px;
+  margin-top: 2rem;
+  padding: 0 0.5rem;
+}
+
+.label-min, .label-max {
+  font-size: 0.8rem;
+  color: var(--text-muted, #64748b);
+  font-weight: 500;
+}
+
+@media (max-width: 480px) {
+  .likert-btn {
+    font-size: 1rem;
+  }
+  .btn-desc-tooltip {
+    display: none; /* Hide tooltips on mobile to avoid layout breaking */
+  }
+}

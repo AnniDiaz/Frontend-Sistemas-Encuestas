@@ -1,0 +1,88 @@
+<div class="formulario-card">
+  <!-- Progress tracker -->
+  <div class="progress-section">
+    <app-progress-bar [progress]="progress"></app-progress-bar>
+  </div>
+
+  <!-- Dimension tabs for visualization -->
+  <div class="dimension-tabs">
+    @for (dim of dimensiones; track dim.idDimension; let idx = $index) {
+      <button 
+        type="button" 
+        class="tab-btn" 
+        [class.active]="currentIndex === idx"
+        [class.completed]="dimensionCompletada(dim)"
+        (click)="currentIndex = idx"
+      >
+        <span class="tab-code">{{ dim.codigo }}</span>
+        <span class="tab-name">{{ dim.nombre | titlecase }}</span>
+      </button>
+    }
+  </div>
+
+  <!-- Current active dimension content -->
+  <div class="dimension-content">
+    <div class="dimension-header">
+      <span class="dimension-badge">Dimensión {{ activeDimension.codigo }}</span>
+      <h2 class="dimension-title">{{ activeDimension.nombre }}</h2>
+    </div>
+
+    <div class="questions-list">
+      @for (item of activeDimension.items; track item.idPregunta) {
+        <div class="question-card" [class.answered]="obtenerValorRespuesta(item.idPregunta) !== null">
+          <div class="question-header">
+            <span class="question-number">{{ item.numero }}</span>
+            <p class="question-text">{{ item.texto }}</p>
+          </div>
+          
+          <div class="question-likert">
+            <app-escala-likert 
+              [valorActivo]="obtenerValorRespuesta(item.idPregunta)"
+              (valorSeleccionado)="registrarRespuesta(item.idPregunta, $event)"
+            ></app-escala-likert>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Navigation actions -->
+  <div class="form-navigation">
+    <button 
+      type="button" 
+      class="btn btn-secondary" 
+      [disabled]="currentIndex === 0" 
+      (click)="atras()"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor">
+        <path d="m313-440 224 224-57 57-320-320 320-320 57 57-224 224h487v80H313Z"/>
+      </svg>
+      Atrás
+    </button>
+
+    @if (currentIndex < dimensiones.length - 1) {
+      <button 
+        type="button" 
+        class="btn btn-primary" 
+        (click)="siguiente()"
+      >
+        Siguiente
+        <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor">
+          <path d="M647-440H160v-80h487L423-744l57-57 320 320-320 320-57-57 224-224Z"/>
+        </svg>
+      </button>
+    } @else {
+      <button 
+        type="button" 
+        class="btn btn-success" 
+        [disabled]="!todasRespondidas()"
+        (click)="enviar()"
+      >
+        Enviar Encuesta
+        <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor">
+          <path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/>
+        </svg>
+      </button>
+    }
+  </div>
+</div>

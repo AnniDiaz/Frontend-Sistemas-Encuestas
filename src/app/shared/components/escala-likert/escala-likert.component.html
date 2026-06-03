@@ -1,0 +1,20 @@
+<div class="likert-container">
+  <div class="likert-buttons">
+    @for (opc of opciones; track opc.valor) {
+      <button 
+        type="button"
+        class="likert-btn"
+        [class.active]="valorActivo === opc.valor"
+        (click)="seleccionar(opc.valor)"
+        [title]="opc.descripcion"
+      >
+        <span class="btn-number">{{ opc.label }}</span>
+        <span class="btn-desc-tooltip">{{ opc.descripcion }}</span>
+      </button>
+    }
+  </div>
+  <div class="likert-labels">
+    <span class="label-min">Muy en desacuerdo (1)</span>
+    <span class="label-max">Muy de acuerdo (5)</span>
+  </div>
+</div>
