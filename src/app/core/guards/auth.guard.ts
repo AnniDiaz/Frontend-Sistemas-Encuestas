@@ -1,21 +1,42 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
-import { EncuestaStateService } from '../services/encuesta-state.service';
+import {
+  ActivatedRouteSnapshot,
+  CanActivateFn,
+  Router
+} from '@angular/router';
 
-export const authGuard: CanActivateFn = (route, state) => {
-  const stateService = inject(EncuestaStateService);
+export const authGuard: CanActivateFn = (
+  route: ActivatedRouteSnapshot
+) => {
+
   const router = inject(Router);
 
-  if (stateService.isAuthenticated()) {
-    const expectedRol = route.data?.['rol'];
-    if (expectedRol && stateService.currentUserRol() !== expectedRol) {
-      // Si el rol no coincide con el esperado, redirige a la selección de rol
-      router.navigate(['/auth/selector-rol']);
-      return false;
-    }
-    return true;
+  const rolActual =
+    localStorage.getItem('rolUsuario');
+
+  const rolRequerido =
+    route.data['rol'];
+
+  if (!rolActual) {
+    return router.createUrlTree([
+      '/auth/selector-rol'
+    ]);
   }
 
-  router.navigate(['/auth/selector-rol']);
-  return false;
+  if (rolActual !== rolRequerido) {
+
+    if (rolActual === 'admin') {
+      return router.createUrlTree(['/reportes']);
+    }
+
+    if (rolActual === 'egresado') {
+      return router.createUrlTree(['/egresado']);
+    }
+
+    if (rolActual === 'empleador') {
+      return router.createUrlTree(['/empleador']);
+    }
+  }
+
+  return true;
 };

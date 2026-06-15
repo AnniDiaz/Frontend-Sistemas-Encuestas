@@ -1,128 +1,456 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+
+import Swal from 'sweetalert2';
+
 import { EncuestaStateService } from '../../../core/services/encuesta-state.service';
-
-interface Pregunta {
-  id: number;
-  texto: string;
-}
-
-interface OpcionLikert {
-  valor: number;
-  label: string;
-  emoji: string;
-}
+import { UsuarioService } from '../../../service/usuario.service';
 
 @Component({
   selector: 'app-dashboard-empleador',
   standalone: true,
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    FormsModule
+  ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent implements OnInit {
-  private readonly stateService = inject(EncuestaStateService);
-  private readonly router = inject(Router);
 
-  encuestaIniciada: boolean = false;
-  errorFormulario: boolean = false;
-  preguntaActual: number = 0;
+  private readonly stateService =
+    inject(EncuestaStateService);
 
-  // Guarda respuestas por id de pregunta
-  respuestas: { [key: number]: number } = {};
+  private readonly usuarioService =
+    inject(UsuarioService);
 
-  // Escala Likert con emojis tal como la imagen
-  opcionesLikert: OpcionLikert[] = [
-    { valor: 1, label: 'Muy Insatisfecho / Total Desacuerdo',     emoji: '😞' },
-    { valor: 2, label: 'Insatisfecho / En Desacuerdo',           emoji: '😕' },
-    { valor: 3, label: 'Neutral / Ni de acuerdo ni en desacuerdo', emoji: '😐' },
-    { valor: 4, label: 'Satisfecho / De Acuerdo',                emoji: '🙂' },
-    { valor: 5, label: 'Muy Satisfecho / Totalmente de Acuerdo', emoji: '😄' },
-  ];
+  private readonly router =
+    inject(Router);
 
-  // 20 preguntas del Instrumento ID29
-  preguntas: Pregunta[] = [
-    { id: 1,  texto: 'Habilidad para resolver problemas de manera ágil y crítica ante imprevistos.' },
-    { id: 2,  texto: 'Nivel de dominio técnico y herramientas de especialización del programa en las labores asignadas.' },
-    { id: 3,  texto: 'Capacidad para comunicarse de forma asertiva, oral y escrita, en los distintos niveles de la organización.' },
-    { id: 4,  texto: 'Disposición, liderazgo y efectividad para cooperar e integrarse en dinámicas de trabajo en equipo.' },
-    { id: 5,  texto: 'Demostración de valores éticos, responsabilidad profesional y compromiso social en su centro laboral.' },
-    { id: 6,  texto: 'Capacidad para identificar debilidades críticas y formular soluciones técnicas estructuradas e innovadoras.' },
-    { id: 7,  texto: 'Proactividad, iniciativa y autonomía demostrada en la ejecución de sus proyectos y responsabilidades.' },
-    { id: 8,  texto: 'Capacidad de adaptación al cambio tecnológico, metodologías ágiles y nuevas regulaciones de la industria.' },
-    { id: 9,  texto: 'Nivel de puntualidad, disciplina, orden y cumplimiento estricto de las metas operativas encomendadas.' },
-    { id: 10, texto: 'Habilidad para organizar el tiempo de entrega y priorizar tareas bajo escenarios de alta presión.' },
-    { id: 11, texto: 'Nivel de orientación a la calidad del servicio, optimización de recursos y atención al detalle.' },
-    { id: 12, texto: 'Uso estratégico de tecnologías de la información, softwares avanzados y equipamiento especializado.' },
-    { id: 13, texto: 'Capacidad analítica para el procesamiento de datos complejos y formulación objetiva de informes de gestión.' },
-    { id: 14, texto: 'Dominio de segundos idiomas o lenguajes técnicos requeridos para las operaciones de la empresa.' },
-    { id: 15, texto: 'Compromiso evidente con su autoaprendizaje y la actualización continua en su campo profesional.' },
-    { id: 16, texto: 'Habilidad gerencial para la toma de decisiones oportunas y manejo inteligente de conflictos interpersonales.' },
-    { id: 17, texto: 'Nivel de adaptabilidad cultural y respeto por la biodiversidad y normativas ambientales en sus tareas.' },
-    { id: 18, texto: 'Nivel de madurez profesional y resiliencia frente a contingencias organizacionales inesperadas.' },
-    { id: 19, texto: '¿Volvería usted a contratar de forma prioritaria a un egresado procedente de este programa de la UNSM?' },
-    { id: 20, texto: 'Valoración general integralizada del desempeño profesional e impacto del egresado dentro de su organización.' },
-  ];
+  empleadorActual: any;
 
-  get porcentajeProgreso(): number {
-    return Math.round((this.getRespuestasCount() / this.preguntas.length) * 100);
+  // =========================
+  // REGISTRO EMPRESA
+  // =========================
+
+  mostrarRegistroEmpresa = false;
+
+  rucTemporal = '';
+
+  razonSocial = '';
+
+  email = '';
+
+  // =========================
+  // ENCUESTAS
+  // =========================
+
+  modalInstrucciones = signal(false);
+
+  encuestasRespondidas =
+    signal<number[]>([]);
+
+  selectedEncuesta =
+    signal<any | null>(null);
+
+  encuestas =
+    signal<any[]>([]);
+
+  respuestas =
+    signal<Record<number, number>>({});
+
+ngOnInit(): void {
+
+  this.empleadorActual = JSON.parse(
+    localStorage.getItem(
+      'empleadorActual'
+    ) || '{}'
+  );
+
+  const tieneEmpresaRegistrada =
+    !!this.empleadorActual?.name &&
+    !!this.empleadorActual?.email;
+
+  if (!tieneEmpresaRegistrada) {
+
+    this.rucTemporal =
+      this.empleadorActual?.ruc ||
+      this.empleadorActual?.dni ||
+      localStorage.getItem(
+        'rucTemporal'
+      ) ||
+      '';
+
+    this.razonSocial =
+      this.empleadorActual?.name || '';
+
+    this.email =
+      this.empleadorActual?.email || '';
+
+    this.mostrarRegistroEmpresa = true;
+
+    return;
   }
 
-  ngOnInit(): void {}
+  this.mostrarRegistroEmpresa = false;
 
-  getRespuestasCount(): number {
-    return Object.keys(this.respuestas).length;
+  this.cargarEncuestasRespondidas();
+}
+
+  // =========================
+  // CARGAR RESPONDIDAS
+  // =========================
+
+  cargarEncuestasRespondidas(): void {
+
+    const idUsuario =
+      this.empleadorActual.idUsuario;
+
+    this.stateService
+      .obtenerEncuestasRespondidas(
+        idUsuario
+      )
+      .subscribe({
+
+        next: (ids) => {
+
+          this.encuestasRespondidas
+            .set(ids);
+
+          this.cargarEncuestas();
+        },
+
+        error: () => {
+
+          this.cargarEncuestas();
+        }
+      });
   }
 
-  getPorcentajeRespondido(): number {
-    return Math.round((this.getRespuestasCount() / this.preguntas.length) * 100);
-  }
+  // =========================
+  // GUARDAR EMPRESA
+  // =========================
 
-  comenzarEncuesta(): void {
-    this.encuestaIniciada = true;
-    this.preguntaActual = 0;
-    this.errorFormulario = false;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+  guardarEmpresa(): void {
 
-  cancelarEncuesta(): void {
-    this.encuestaIniciada = false;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+    if (!this.razonSocial.trim()) {
 
-  seleccionarValor(preguntaId: number, valor: number): void {
-    this.respuestas[preguntaId] = valor;
-  }
+      Swal.fire({
+        icon: 'warning',
+        title: 'Razón social requerida',
+        text: 'Ingrese la razón social de la empresa'
+      });
 
-  prevPregunta(): void {
-    if (this.preguntaActual > 0) {
-      this.preguntaActual--;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }
-
-  nextPregunta(): void {
-    if (this.preguntaActual < this.preguntas.length - 1) {
-      this.preguntaActual++;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }
-
-  enviarEncuesta(): void {
-    const totalRespondidas = this.getRespuestasCount();
-    if (totalRespondidas < this.preguntas.length) {
-      this.errorFormulario = true;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
-    this.errorFormulario = false;
-    alert('¡Encuesta Institucional (ID29) guardada y enviada al sistema de Aseguramiento de la Calidad OTI exitosamente!');
-    this.logout();
+
+    if (!this.email.trim()) {
+
+      Swal.fire({
+        icon: 'warning',
+        title: 'Correo requerido',
+        text: 'Ingrese un correo electrónico'
+      });
+
+      return;
+    }
+
+const empresa = {
+
+  idUsuario:
+    this.empleadorActual?.idUsuario,
+
+  dni:
+    this.rucTemporal,
+
+  ruc:
+    this.rucTemporal,
+
+  name:
+    this.razonSocial,
+
+  email:
+    this.email,
+
+  tipo:
+    'empresa'
+};
+    this.usuarioService
+      .guardar(empresa)
+      .subscribe({
+
+        next: (usuario: any) => {
+
+          this.empleadorActual =
+            usuario;
+
+          localStorage.setItem(
+            'empleadorActual',
+            JSON.stringify(usuario)
+          );
+
+          localStorage.removeItem(
+            'rucTemporal'
+          );
+
+          this.mostrarRegistroEmpresa =
+            false;
+
+          this.cargarEncuestasRespondidas();
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Datos guardados',
+            text: 'La información de la empresa fue registrada correctamente'
+          });
+        },
+
+        error: () => {
+
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo registrar la empresa'
+          });
+        }
+      });
+  }
+
+  // =========================
+  // CARGAR ENCUESTAS
+  // =========================
+
+  cargarEncuestas(): void {
+
+    const rolUsuario =
+      localStorage.getItem(
+        'rolUsuario'
+      );
+
+    this.stateService
+      .obtenerEncuestas()
+      .subscribe({
+
+        next: (data) => {
+
+          const respondidas =
+            this.encuestasRespondidas();
+
+          const filtradas = data
+            .filter((e: any) =>
+              e.cargo?.toLowerCase() ===
+              rolUsuario?.toLowerCase()
+            )
+            .map((e: any) => ({
+              ...e,
+              respondida:
+                respondidas.includes(
+                  e.idEncuesta
+                )
+            }));
+
+          this.encuestas.set(
+            filtradas
+          );
+        },
+
+        error: () => {
+
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudieron cargar las encuestas'
+          });
+        }
+      });
+  }
+
+readonly porcentajeProgreso = computed(() => {
+
+  const total = this.encuestas().length;
+
+  if (total === 0) {
+    return 0;
+  }
+
+  const respondidas =
+    this.encuestasRespondidas().length;
+
+  return Math.round(
+    (respondidas / total) * 100
+  );
+});
+  iniciarEncuesta(
+    encuesta: any
+  ): void {
+
+    if (encuesta.respondida) {
+
+      Swal.fire({
+        icon: 'info',
+        title: 'Ya completada',
+        text: 'Esta encuesta ya fue respondida'
+      });
+
+      return;
+    }
+
+    this.selectedEncuesta.set(
+      encuesta
+    );
+
+    this.respuestas.set({});
+
+    this.modalInstrucciones.set(
+      true
+    );
+  }
+
+  cerrarModal(): void {
+
+    this.modalInstrucciones.set(
+      false
+    );
+
+    this.selectedEncuesta.set(
+      null
+    );
+
+    this.respuestas.set({});
+  }
+
+  seleccionarRespuesta(
+    itemId: number,
+    valor: number
+  ): void {
+    this.respuestas.update(prev => ({
+      ...prev,
+      [itemId]: valor
+    }));
+  }
+
+  obtenerRespondidas(): number {
+
+    return Object.keys(
+      this.respuestas()
+    ).length;
+  }
+
+  obtenerTotalPreguntas(): number {
+
+    const encuesta =
+      this.selectedEncuesta();
+
+    if (!encuesta) {
+      return 0;
+    }
+
+    return encuesta.dimensiones.reduce(
+      (
+        total: number,
+        d: any
+      ) =>
+        total +
+        d.items.length,
+      0
+    );
+  }
+
+  encuestaCompleta(): boolean {
+
+    return (
+      this.obtenerRespondidas() ===
+      this.obtenerTotalPreguntas()
+    );
+  }
+
+  finalizarEncuesta(): void {
+
+    if (!this.encuestaCompleta()) {
+
+      const faltan =
+        this.obtenerTotalPreguntas() -
+        this.obtenerRespondidas();
+
+      Swal.fire({
+        icon: 'warning',
+        title: 'Encuesta incompleta',
+        text: `Faltan ${faltan} preguntas por responder`
+      });
+
+      return;
+    }
+
+const respuestasPayload =
+  Object.entries(this.respuestas())
+  .map(([idItem, valor]) => ({
+    idItem: Number(idItem),
+    valor: String(valor)
+  }));
+
+    const payload = {
+      idUsuario: this.empleadorActual.idUsuario,
+      idEncuesta: this.selectedEncuesta()?.idEncuesta,
+      nombreEncuesta: this.selectedEncuesta()?.nombre,
+      respuestas: respuestasPayload
+    };
+
+    this.stateService.guardarRespuestasExamen(payload).subscribe({
+      next: () => {
+        const encuestaActual = this.selectedEncuesta();
+       if (encuestaActual) {
+
+  this.encuestasRespondidas.update(ids => [
+    ...ids,
+    encuestaActual.idEncuesta
+  ]);
+
+  this.encuestas.update(encuestas =>
+    encuestas.map(e =>
+      e.idEncuesta === encuestaActual.idEncuesta
+        ? { ...e, respondida: true }
+        : e
+    )
+  );
+}
+        this.cerrarModal();
+        this.cargarEncuestas();
+        Swal.fire({
+          icon: 'success',
+          title: 'Enviado',
+          text: 'Encuesta guardada correctamente'
+        });
+      },
+      error: () => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo guardar la encuesta'
+        });
+      }
+    });
   }
 
   logout(): void {
+
     this.stateService.logout();
-    this.router.navigate(['/auth/selector-rol']);
+
+    localStorage.removeItem(
+      'empleadorActual'
+    );
+
+    localStorage.removeItem(
+      'rolUsuario'
+    );
+
+    localStorage.removeItem(
+      'rucTemporal'
+    );
+
+    this.router.navigate([
+      '/auth/selector-rol'
+    ]);
   }
 }

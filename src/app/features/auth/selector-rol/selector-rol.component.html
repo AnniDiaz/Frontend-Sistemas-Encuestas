@@ -2,62 +2,62 @@
   <div class="auth-box">
     <div class="auth-header">
       <div class="logo-wrapper">
-        <img class="unsm-logo-img" src="assets/unsm.png" alt="Escudo UNSM">
+        <img class="unsm-logo-img" src="/assets/img/logo_unsm.png" alt="Escudo UNSM">
       </div>
       <span class="institution-name">UNIVERSIDAD NACIONAL DE SAN MARTÍN</span>
-      <h1 class="portal-title">Sistema Inteligente de Encuestas</h1>
-      <p class="portal-subtitle">Bienvenido al portal de aseguramiento de la calidad académica. Por favor, elija su rol inicial para continuar.</p>
+      <h1 class="portal-title">Sistema de Encuestas</h1>
     </div>
 
     <div class="roles-grid">
       <div class="role-card card-egresado" (click)="seleccionarRol('egresado')">
         <div class="role-card-inner">
+
+
+          <div class="role-title-row">
           <div class="role-icon icon-egresado">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
               <path d="M480-120 200-272v-160L40-520l440-240 440 240v320h-80v-276l-120 66v168L480-120Zm0-328 320-176-320-176-320 176 320 176Zm0 238 200-110v-122l-200 110-200-110v122l200 110Zm0-170Z"/>
             </svg>
           </div>
-          
-          <div class="role-title-row">
-            <h3>Soy Egresado</h3>
-            <span class="role-badge badge-egresado">Graduado</span>
+          <h3>Soy Egresado</h3>
           </div>
-          
+
           <p class="role-desc">Acceda a sus encuestas de calidad, trayectoria laboral, calidad educativa e informe sus opiniones institucionales.</p>
-          
+
           <a class="role-link link-egresado">
-            Ingresar al portal
-            <svg xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 -960 960 960" width="16" fill="currentColor">
-              <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"/>
-            </svg>
+            <p>Ingresar al portal</p> <strong>></strong>
+
           </a>
         </div>
       </div>
 
       <div class="role-card card-empleador" (click)="seleccionarRol('empleador')">
         <div class="role-card-inner">
-          <div class="role-icon icon-empleador">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
-              <path d="M160-120q-33 0-56.5-23.5T80-200v-440q0-33 23.5-56.5T160-720h160v-80q0-33 23.5-56.5T400-880h160q33 0 56.5 23.5T672-800h160q33 0 56.5 23.5T920-720v440q0 33-23.5 56.5T800-120H160Zm0-80h640v-440H160v440Zm240-520h160v-80H400v80Zm-240 520v-440 440Z"/>
-            </svg>
-          </div>
-          
+
+
           <div class="role-title-row">
-            <h3>Soy Empleador / Jefe</h3>
-            <span class="role-badge badge-empleador">Empresas</span>
+            <div class="role-icon icon-empleador">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
+                <path d="M160-120q-33 0-56.5-23.5T80-200v-440q0-33 23.5-56.5T160-720h160v-80q0-33 23.5-56.5T400-880h160q33 0 56.5 23.5T672-800h160q33 0 56.5 23.5T920-720v440q0 33-23.5 56.5T800-120H160Zm0-80h640v-440H160v440Zm240-520h160v-80H400v80Zm-240 520v-440 440Z"/>
+              </svg>
           </div>
-          
+            <h3>Soy Empleador / Jefe</h3>
+          </div>
+
           <p class="role-desc">Evalúe las competencias y nivel de desempeño de los graduados de la UNSM que se desempeñan en su organización.</p>
-          
+
           <a class="role-link link-empleador">
-            Evaluar egresados
-            <svg xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 -960 960 960" width="16" fill="currentColor">
-              <path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"/>
-            </svg>
+            <p>Evaluar egresados </p>
+            <strong> ></strong>
+
+
           </a>
         </div>
       </div>
     </div>
+
+  </div>
+  <div class="cont-img">
 
   </div>
 </div>

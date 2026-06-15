@@ -1,0 +1,10 @@
+{
+  "/reniec": {
+    "target": "https://soporte.unsm.edu.pe",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/reniec": "/wsdl"
+    }
+  }
+}

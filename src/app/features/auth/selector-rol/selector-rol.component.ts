@@ -13,14 +13,13 @@ export class SelectorRolComponent implements OnInit {
   private readonly router = inject(Router);
 
   ngOnInit(): void {
-    const rolGuardado = localStorage.getItem('rolPreferencia');
-    if (rolGuardado === 'egresado' || rolGuardado === 'empleador') {
-      this.router.navigate(['/auth/login-dni', rolGuardado]);
-    }
+    // Limpiar rolPreferencia que pueda haber quedado de intentos anteriores
+    localStorage.removeItem('rolPreferencia');
   }
 
   seleccionarRol(rol: 'egresado' | 'empleador'): void {
-    localStorage.setItem('rolPreferencia', rol);
-    this.router.navigate(['/auth/login-dni', rol]);
+    // Solo navega sin guardar en localStorage
+    // Se guardará después del login exitoso
+    this.router.navigate(['/auth/login', rol]);
   }
 }

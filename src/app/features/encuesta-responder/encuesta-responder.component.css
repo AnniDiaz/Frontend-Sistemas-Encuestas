@@ -1,0 +1,280 @@
+:host{
+  display:block;
+  background:#f7f9fc;
+  min-height:100vh;
+}
+
+.encuesta-page{
+  max-width:1200px;
+  margin:auto;
+  padding:30px;
+}
+
+/* HEADER */
+
+.top-section{
+  margin-bottom:30px;
+}
+
+.btn-back{
+  border:none;
+  background:transparent;
+  cursor:pointer;
+  font-size:13px;
+  font-weight:600;
+  color:#64748b;
+  margin-bottom:20px;
+}
+
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+
+  color:#009c5d;
+  font-weight:700;
+  font-size:13px;
+
+  margin-bottom:20px;
+}
+
+.header-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:30px;
+}
+
+.header-row h1{
+  margin:0;
+  font-size:42px;
+  font-weight:800;
+  color:#0f172a;
+}
+
+.header-row h2{
+  margin:0;
+  font-size:42px;
+  font-weight:800;
+  color:#00a86b;
+}
+
+.progress-box{
+  width:220px;
+}
+
+.progress-box span{
+  color:#94a3b8;
+  font-size:12px;
+  font-weight:700;
+}
+
+.progress-box strong{
+  float:right;
+  color:#94a3b8;
+}
+
+.progress-bar{
+  width:100%;
+  height:8px;
+  background:#e2e8f0;
+  border-radius:20px;
+  margin-top:10px;
+}
+
+.progress-fill{
+  width:0%;
+  height:100%;
+  background:#00a86b;
+  border-radius:20px;
+}
+
+/* INSTRUCCIONES */
+
+.instructions-card{
+  background:white;
+  border-radius:18px;
+  padding:25px;
+  border-left:5px solid #00a86b;
+  box-shadow:0 2px 8px rgba(0,0,0,.05);
+  margin-bottom:30px;
+}
+
+.instructions-card h3{
+  margin:0 0 10px;
+  font-size:16px;
+}
+
+.instructions-card p{
+  color:#64748b;
+}
+
+.escala-info{
+  margin-top:20px;
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:10px;
+}
+
+.escala-info div{
+  text-align:center;
+}
+
+.escala-info small{
+  display:block;
+  color:#94a3b8;
+  margin-bottom:6px;
+}
+
+.escala-info button{
+  width:100%;
+  border:1px solid #e2e8f0;
+  background:#f8fafc;
+  padding:10px;
+  border-radius:10px;
+}
+
+/* DIMENSIONES */
+
+.dimension-section{
+  margin-top:35px;
+}
+
+.dimension-title{
+  font-size:22px;
+  font-weight:800;
+  color:#0f172a;
+  margin-bottom:20px;
+}
+
+/* PREGUNTAS */
+
+.question-card{
+  background:white;
+  border-radius:16px;
+  padding:22px;
+  margin-bottom:18px;
+
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  box-shadow:0 2px 8px rgba(0,0,0,.05);
+}
+
+.question-label{
+  color:#00a86b;
+  font-size:12px;
+  font-weight:700;
+}
+
+.question-content p{
+  margin-top:10px;
+  font-size:16px;
+  color:#1e293b;
+}
+
+.options{
+  display:flex;
+  gap:10px;
+}
+
+.option-btn{
+  width:42px;
+  height:42px;
+  border-radius:10px;
+  border:1px solid #e2e8f0;
+  background:white;
+  cursor:pointer;
+  font-weight:700;
+}
+
+.option-btn:hover{
+  background:#f1f5f9;
+}
+
+.option-btn.selected{
+  background:#00a86b;
+  color:white;
+  border-color:#00a86b;
+}
+
+/* FOOTER */
+
+.footer-actions{
+  margin-top:40px;
+  padding-top:20px;
+  border-top:1px solid #e2e8f0;
+
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.footer-actions span{
+  color:#94a3b8;
+  font-size:14px;
+}
+
+.btn-submit{
+  border:none;
+  background:#dbeafe;
+  color:#64748b;
+
+  padding:14px 28px;
+  border-radius:14px;
+
+  font-weight:700;
+  cursor:pointer;
+}
+/* INPUT TEXTO Y FECHA */
+
+.form-control{
+  width: 320px;
+  height: 48px;
+
+  border: 1.5px solid #dbe3ec;
+  border-radius: 12px;
+
+  background: #ffffff;
+
+  padding: 0 16px;
+
+  font-size: 14px;
+  color: #1e293b;
+
+  outline: none;
+
+  transition: all .25s ease;
+}
+
+.form-control:hover{
+  border-color: #b8c4d3;
+}
+
+.form-control:focus{
+  border-color: #00a86b;
+  box-shadow: 0 0 0 4px rgba(0,168,107,.12);
+}
+
+/* fecha */
+
+input[type="month"].form-control{
+  cursor: pointer;
+  min-width: 220px;
+}
+
+/* placeholder */
+
+.form-control::placeholder{
+  color: #94a3b8;
+}
+
+/* contenedor de inputs */
+
+.options{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}

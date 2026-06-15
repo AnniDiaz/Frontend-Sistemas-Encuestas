@@ -1,3 +1,4 @@
+
 :root {
   --primary-color: #009A44;
   --primary-dark: #005826;
@@ -24,14 +25,41 @@
 
 .auth-container {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh; /* Altura de pantalla exacta */
+  width: 100% !important;
+
+  height: 100vh; /* Se cambia a height fijo para evitar que crezca más de la pantalla */
   background-color: #f8fafc;
-  padding: 1rem;
   box-sizing: border-box;
-  overflow: hidden; /* Elimina scroll vertical residual */
+  overflow: hidden; /* Garantiza que no exista scroll residual */
 }
+.auth-box {
+  background: rgb(255, 255, 255);
+  width: 27% !important;
+  animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  padding:  2rem;
+  align-items: center;
+}
+.cont-img {
+  width: 73% !important;
+  position: relative;
+
+  background-image: url('/assets/img/portada_unsm.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+
+.cont-img::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45); /* Ajusta la opacidad */
+  z-index: 1;
+}
+
 
 .login-wrapper {
   width: 100%;
@@ -43,19 +71,25 @@
 }
 
 .back-link {
-  display: inline-flex;
-  align-items: center;
+  align-items: left !important;
   gap: 0.35rem;
   border: none;
+
+  z-index: 999;
+  margin-bottom: -20px;
   background: transparent;
-  color: #475569;
+
+  color: #b9b9b9;
   font-family: inherit;
-  font-size: 0.85rem;
-  font-weight: 700;
+  font-size: 0.6rem;
+  font-weight: 600;
   cursor: pointer;
   padding: 0;
-  margin-bottom: 0.85rem;
   transition: color 0.2s ease;
+}
+.back-link p{
+  font-size: 15px;
+text-align: left !important;
 }
 
 .back-link:hover {
@@ -65,9 +99,8 @@
 .login-card {
   width: 100%;
   background: #ffffff;
-  border: 1px solid #e2e8f0;
   border-radius: 24px;
-  padding: 2.25rem; /* Ajustado para compensar el retiro del simulador */
+  padding: 1rem; /* Ajustado para compensar el retiro del simulador */
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.03), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
   box-sizing: border-box;
   display: flex;
@@ -75,21 +108,23 @@
   align-items: center;
 }
 
-.logo-wrapper {
-  width: 75px;
-  height: 90px;
-  margin-bottom: 1rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
 
 .unsm-logo-img {
-  width: 100%;
-  height: 100%;
+  width: 160px;
+  margin-top: 30px !important;
+  height: 160px;
   object-fit: contain;
+  margin: auto;
 }
 
+.login-card h2{
+  color: #005826;
+  text-align: center;
+  margin-top: 20px;
+  text-transform: uppercase;
+  font-weight: 900;
+  margin-bottom: 20px;
+}
 .login-header {
   text-align: center;
   margin-bottom: 1.5rem;
@@ -113,6 +148,8 @@
   font-weight: 800;
   color: #0f172a;
   margin: 0 0 0.5rem 0;
+  text-transform: none;
+  margin-bottom: 10px;
   letter-spacing: -0.02em;
 }
 

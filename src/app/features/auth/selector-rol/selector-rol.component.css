@@ -1,6 +1,13 @@
 /* Variables globales de respaldo por si no están definidas en tu proyecto */
+*{
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  box-sizing: border-box;
+
+}
 :root {
-  --primary-color: #009A44;
+  --primary-color: #014e22;
   --primary-dark: #005826;
   --text-muted: #64748b;
   --border-color: #e2e8f0;
@@ -14,23 +21,42 @@
 
 .auth-container {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  width: 100% !important;
+
   height: 100vh; /* Se cambia a height fijo para evitar que crezca más de la pantalla */
   background-color: #f8fafc;
-  padding: 1rem; /* Reducido para ahorrar espacio vertical */
   box-sizing: border-box;
   overflow: hidden; /* Garantiza que no exista scroll residual */
 }
-
 .auth-box {
-  width: 100%;
-  max-width: 900px;
+  background: rgb(255, 255, 255);
+  width: 27% !important;
   animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
+  padding: 2.7rem;
   align-items: center;
 }
+.cont-img {
+  width: 73% !important;
+  position: relative;
+
+  background-image: url('/assets/img/portada_unsm.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+
+.cont-img::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45); /* Ajusta la opacidad */
+  z-index: 1;
+}
+
+
 
 /* Header layout */
 .auth-header {
@@ -51,14 +77,14 @@
 
 /* CORRECCIÓN DE TU CLASE: Ahora se adapta perfectamente a la etiqueta <img> */
 .unsm-logo-img {
-  width: 100%;
-  height: 100%;
+  width: 94%;
+  height: 94%;
   object-fit: contain;
 }
 
 .institution-name {
-  font-size: 0.8rem; /* Ligeramente más compacto */
-  font-weight: 700;
+  font-size: 1.4rem; /* Ligeramente más compacto */
+  font-weight: 900;
   color: var(--primary-color);
   letter-spacing: 0.05em;
   margin-bottom: 0.25rem;
@@ -66,11 +92,11 @@
 }
 
 .portal-title {
-  font-size: 2rem; /* Reducido de 2.25rem */
+  font-size: 1.4rem; /* Reducido de 2.25rem */
   font-weight: 800;
+  margin-top: 10px;
   color: #0f172a;
   letter-spacing: -0.03em;
-  margin: 0 0 0.5rem 0;
   line-height: 1.2;
 }
 
@@ -84,8 +110,9 @@
 
 /* Roles grid */
 .roles-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
+
   gap: 1.5rem; /* Reducido de 2rem */
   width: 100%;
   margin-bottom: 1.5rem; /* Reducido de 2.5rem */
@@ -106,7 +133,7 @@
 }
 
 .role-card-inner {
-  padding: 2rem; /* Reducido de 2.5rem para optimizar espacio */
+  padding: 1rem 1.4rem; /* Reducido de 2.5rem para optimizar espacio */
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -129,9 +156,9 @@
 
 /* Icons styling */
 .role-icon {
-  width: 48px; /* Reducido de 56px */
-  height: 48px;
+  width: 45px; /* Reducido de 56px */
   border-radius: 12px;
+  padding: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -171,11 +198,13 @@
 /* Typography on cards */
 .role-title-row {
   display: flex;
+
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: 0.75rem;
 }
-
+.role-title-row h3{
+  margin-top: -20px !important;
+}
 .role-card h3 {
   font-size: 1.35rem; /* Reducido de 1.5rem */
   font-weight: 800;
@@ -204,25 +233,32 @@
 }
 
 .role-desc {
-  font-size: 0.9rem; /* Reducido de 0.95rem */
+  font-size: 0.8rem; /* Reducido de 0.95rem */
   color: #475569;
+  text-align: justify !important;
   line-height: 1.5;
-  margin: 0 0 1.25rem 0; /* Reducido de 2rem */
+  margin-top: -0.7rem !important;
   flex-grow: 1;
 }
 
 /* CTAs links on card */
 .role-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
+  display: flex;
   font-size: 0.9rem;
+  margin-top: 10px;
   font-weight: 700;
   transition: gap 0.2s ease, transform 0.2s ease;
 }
-
-.link-egresado {
-  color: var(--primary-color);
+.link-egresado{
+  color: forestgreen;
+}
+.role-link p{
+  text-align: right;
+}
+.role-link strong{
+  text-align: right;
+  width: 10% ;
+  padding-right: 10px;
 }
 
 .link-empleador {
@@ -230,7 +266,7 @@
 }
 
 .role-card:hover .role-link {
-  gap: 0.55rem;
+  gap: 0.02rem;
 }
 
 

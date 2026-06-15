@@ -1,0 +1,252 @@
+*{
+  margin: 0px;
+  padding: 0px;
+  box-sizing: 0px;
+}
+.container {
+  display: flex;
+  min-height: 100vh;
+  background: white;
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+}
+
+/* PANEL IZQUIERDO */
+.left {
+
+  backdrop-filter: blur(10px);
+  display: flex;
+  padding: 30px 50px;
+  width: 18% !important;
+  flex-direction: column;
+  justify-content: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  animation: fadeIn 0.6s ease;
+}
+
+/* LOGO + TITULO */
+.brand-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.brand-row img {
+  width: 150px;
+  max-width: 100%;
+}
+
+.left h1 {
+  font-size: 26px;
+  font-weight: 900;
+  color: #047028;
+  text-align: center;
+  margin-bottom: -5px;
+}
+
+/* SUBTITULO */
+.welcome-subtitle {
+  text-align: center;
+  color: #64748b;
+  font-size: 15px;
+  margin-bottom: 20px;
+}
+
+/* INPUTS */
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.form-group input {
+  width: 87%;
+  padding: 13px 32px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  font-size: 14px;
+  transition: all 0.25s ease;
+}
+
+.toggle-eye {
+  background: none;
+  border: none;
+  margin-top: -30px !important;
+  cursor: pointer;
+  position: absolute;
+  right: -15px
+  }
+.form-group input:focus {
+  border-color: #009531;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(0, 149, 49, 0.15);
+}
+
+.form-group input:hover {
+  border-color: #cbd5f5;
+}
+
+/* ICONOS */
+.input-icon-left,
+.input-icon-right {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+
+.input-icon-left {
+  left: 12px;
+}
+
+.input-icon-right {
+  right: 14px;
+  cursor: pointer;
+}
+
+/* OPCIONES */
+.options-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  margin-bottom: 20px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.left a {
+  color: #009531;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* BOTON */
+.btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 700;
+  font-size: 14px;
+  color: white;
+  background: #009531;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(0, 149, 49, 0.35);
+}
+
+/* FOOTER */
+.footer {
+  margin-top: 25px;
+  text-align: center;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.right {
+  flex: 1;
+  width: 80% !important;
+
+  position: relative;
+  background-image: url("/assets/img/portada_unsm.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Capa negra encima de la imagen */
+.right::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6); /* 👈 aquí ajustas oscuridad */
+}
+
+/* TABLET Y CELULAR */
+@media (max-width: 1024px) {
+  .container {
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+
+    /* 👇 USAR IMAGEN COMO FONDO */
+    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5));
+  }
+
+  .left {
+    flex: 0 1 100%;
+    max-width: 500px;
+    margin: auto;
+    border-radius: 16px;
+
+    /* 👇 efecto glass bonito */
+    background: rgba(255, 255, 255, 0.9);
+  }
+
+  .right {
+    display: none; /* ahora sí se puede ocultar */
+  }
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 15px;
+
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6));
+  }
+
+  .left {
+    padding: 35px 20px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+  }
+}
+@media (max-width: 500px) {
+
+
+  .left {
+    margin: 0px 20px;
+    width: 80%;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+  }
+}
+
+
+/* ANIMACION */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

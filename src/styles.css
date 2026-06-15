@@ -5,14 +5,14 @@
   --primary-dark: #005826;  /* Verde Intenso UNSM */
   --accent-color: #FFD700;  /* Oro UNSM */
   --alert-color: #EF4444;   /* Alerta Carmín */
-  
+
   --bg-color: #f8fafc;
   --card-bg: #ffffff;
   --text-color: #0f172a;
   --text-muted: #64748b;
   --border-color: #cbd5e1;
   --bg-hover: #f1f5f9;
-  
+
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 }

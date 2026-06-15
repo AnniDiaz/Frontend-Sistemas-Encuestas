@@ -1,0 +1,50 @@
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <div class="container">
+    <div class="left">
+      <div class="brand-row">
+        <img src="/assets/img/logo_unsm.png" alt="UNSM logo" >
+        <h1>SISTEMA DE ENCUESTAS</h1>
+
+      </div>
+
+      <p class="welcome-subtitle">
+        Ingresa tus credenciales para acceder al sistema de inventario
+      </p>
+
+      <div class="form-group">
+        <label for="username">Usuario</label>
+        <div class="input-wrapper">
+          <i class="fa fa-user input-icon-left" aria-hidden="true"></i>
+          <input id="username" type="text" placeholder="ej. alexj" [(ngModel)]="loginData.username" name="username">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+    <div class="input-wrapper">
+  <i class="fa fa-lock input-icon-left"></i>
+
+  <input 
+    id="password"
+    [type]="hide ? 'password' : 'text'"
+    placeholder="••••••••"
+    [(ngModel)]="loginData.password"
+    name="password"
+  >
+
+  <button type="button" class="toggle-eye" (click)="hide = !hide">
+    <i [ngClass]="hide ? 'fa fa-eye' : 'fa fa-eye-slash'"></i>
+  </button>
+</div>
+      </div>
+
+   
+
+      <button class="btn" (click)="formSubmit()">INGRESAR AL SISTEMA</button>
+
+      <p class="footer">© 2026 FISI - UNSM. Todos los derechos reservados.</p>
+    </div>
+
+    <div class="right">
+    </div>
+  </div>

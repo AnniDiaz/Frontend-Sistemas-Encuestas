@@ -1,0 +1,224 @@
+<div class="encuesta-page">
+
+  <!-- Header -->
+  <div class="top-section">
+
+    <button
+      class="btn-back"
+      (click)="volver()">
+      ← VOLVER
+    </button>
+
+    <div class="header-content">
+
+      <div class="badge">
+        EGRESADOS 2026
+      </div>
+
+      <div class="header-row">
+
+        <div>
+          <h1>{{ encuesta()?.nombre || 'Encuesta' }}</h1>
+          <h2>para los Egresados</h2>
+        </div>
+
+        <div class="progress-box">
+
+          <strong>{{ progreso() }}%</strong>
+
+          <div class="progress-bar">
+            <div
+              class="progress-fill"
+              [style.width.%]="progreso()">
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Instrucciones -->
+  <div class="instructions-card">
+
+    <h3>INSTRUCCIONES</h3>
+
+    <p>
+      Estimado egresado, su opinión es fundamental para la mejora continua
+      del programa. Por favor, califique su nivel de satisfacción.
+    </p>
+
+    <div class="escala-info">
+
+      <div>
+        <small>1: MUY INSATISFECHO</small>
+      </div>
+
+      <div>
+        <small>2: INSATISFECHO</small>
+      </div>
+
+      <div>
+        <small>3: NEUTRO</small>
+      </div>
+
+      <div>
+        <small>4: SATISFECHO</small>
+      </div>
+
+      <div>
+        <small> 5: MUY SATISFECHO</small>
+      </div>
+
+    </div>
+
+  </div>
+
+  @if (encuesta()) {
+
+    @for (
+      dimension of encuesta()?.dimensiones;
+      track dimension.idDimension
+    ) {
+
+      <div class="dimension-section">
+
+        <h3 class="dimension-title">
+          {{ dimension.nombre }}
+        </h3>
+
+        @for (
+          item of dimension.items;
+          track item.idItem
+        ) {
+
+          <div class="question-card">
+
+            <div class="question-content">
+
+              <span class="question-label">
+                Pregunta {{ item.numero }}
+              </span>
+
+              <p>
+                {{ item.texto }}
+              </p>
+
+            </div>
+
+       <div class="options">
+
+  <!-- ESCALA -->
+  @if (item.tipoPregunta === 'ESCALA') {
+
+    @for (n of [1,2,3,4,5]; track n) {
+
+      <button
+        type="button"
+        class="option-btn"
+        [class.selected]="respuestas()[item.idItem] === n"
+        (click)="seleccionarRespuesta(item.idItem, n)">
+
+        {{ n }}
+
+      </button>
+
+    }
+
+  }
+
+  <!-- BOOLEANO -->
+  @else if (item.tipoPregunta === 'BOOLEANO') {
+
+    <button
+      type="button"
+      class="option-btn"
+      [class.selected]="respuestas()[item.idItem] === true"
+      (click)="seleccionarRespuesta(item.idItem, true)">
+
+      Sí
+
+    </button>
+
+    <button
+      type="button"
+      class="option-btn"
+      [class.selected]="respuestas()[item.idItem] === false"
+      (click)="seleccionarRespuesta(item.idItem, false)">
+
+      No
+
+    </button>
+
+  }
+
+  <!-- TEXTO -->
+  @else if (item.tipoPregunta === 'TEXTO') {
+
+    <input
+      type="text"
+      class="form-control"
+      [value]="respuestas()[item.idItem] || ''"
+      (input)="seleccionarRespuesta(
+        item.idItem,
+        $any($event.target).value
+      )">
+
+  }
+
+  <!-- FECHA -->
+  @else if (item.tipoPregunta === 'FECHA') {
+
+    <input
+      type="month"
+      class="form-control"
+      [value]="respuestas()[item.idItem] || ''"
+      (input)="seleccionarRespuesta(
+        item.idItem,
+        $any($event.target).value
+      )">
+
+  }
+
+</div>
+          </div>
+
+        }
+
+      </div>
+
+    }
+
+  } @else {
+
+    <div class="loading-container">
+
+      <p>
+        Cargando encuesta...
+      </p>
+
+    </div>
+
+  }
+
+  <div class="footer-actions">
+
+    <span>
+      Asegúrate de completar todas las preguntas antes de enviar.
+    </span>
+
+    <button
+      type="button"
+      class="btn-submit"
+      (click)="enviarEncuesta()">
+
+      Enviar Encuesta
+
+    </button>
+
+  </div>
+
+</div>
