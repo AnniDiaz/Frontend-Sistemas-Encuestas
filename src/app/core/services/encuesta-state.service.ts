@@ -1,6 +1,7 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_MAIN_BASE } from '../../shared/components/progress-bar/url';
 
 export interface Egresado {
   dni: string;
@@ -38,9 +39,8 @@ export class EncuestaStateService {
 
   private http = inject(HttpClient);
 
-  private apiUrl = 'http://192.168.50.108:8080//api/examen';
-  private readonly respuestasUrl =
-    'http://192.168.50.108:8080//api/respuestas/examen';
+  private apiUrl = `${API_MAIN_BASE}/api/examen`;
+  private readonly respuestasUrl = `${API_MAIN_BASE}/api/respuestas/examen`;
 
   // ==========================
   // ENCUESTAS
@@ -74,7 +74,7 @@ obtenerEncuestasRespondidas(
 ): Observable<number[]> {
 
   return this.http.get<number[]>(
-    `http://192.168.50.108:8080//api/respuestas/respondidas/${idUsuario}`
+    `${API_MAIN_BASE}/api/respuestas/respondidas/${idUsuario}`
   );
 }
   guardarRespuestasExamen(

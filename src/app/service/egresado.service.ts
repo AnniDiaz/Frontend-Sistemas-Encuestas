@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_EGRESADO_BASE } from '../shared/components/progress-bar/url';
 
 @Injectable({ providedIn: 'root' })
 export class EgresadoService {
 
-  private baseUrl = 'http://192.168.50.108:8004/api';
+  private baseUrl = `${API_EGRESADO_BASE}/api`;
 
   constructor(private http: HttpClient) {}
 

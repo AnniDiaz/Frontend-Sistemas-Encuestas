@@ -1,14 +1,15 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { API_EGRESADO_BASE, API_MAIN_BASE } from '../shared/components/progress-bar/url';
 
 @Injectable({
   providedIn: 'root'
 })
 export class EscuelaService {
 
-  private apiUrl = 'http://192.168.50.108:8004/api/getescuelas';
-  private apiInstrumentos = 'http://192.168.50.108:8080/api/examen/nombres';
+  private apiUrl = `${API_EGRESADO_BASE}/api/getescuelas`;
+  private apiInstrumentos = `${API_MAIN_BASE}/api/examen/nombres`;
 
   constructor(private http: HttpClient) {}
 

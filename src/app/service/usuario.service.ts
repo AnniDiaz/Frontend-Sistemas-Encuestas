@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_MAIN_BASE } from '../shared/components/progress-bar/url';
 
 @Injectable({ providedIn: 'root' })
 export class UsuarioService {
 
-  private baseUrl = 'http://192.168.50.108:8080//api/usuario';
+  private baseUrl = `${API_MAIN_BASE}/api/usuario`;
 
   constructor(private http: HttpClient) {}
 

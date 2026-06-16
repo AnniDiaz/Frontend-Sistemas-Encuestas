@@ -2,14 +2,15 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { DashboardResponse } from '../shared/models/dashboard.model';
+import { API_MAIN_BASE } from '../shared/components/progress-bar/url';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ReporteService {
 
-  private api = 'http://192.168.50.108:8080//api/examen';
-  private dashboardApi = 'http://192.168.50.108:8080//api/dashboard';
+  private api = `${API_MAIN_BASE}/api/examen`;
+  private dashboardApi = `${API_MAIN_BASE}/api/dashboard`;
 
   constructor(private http: HttpClient) {}
 
