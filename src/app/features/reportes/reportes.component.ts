@@ -392,63 +392,166 @@ wsResumen,
 );
 
 
+      // ── Estilos compartidos ────────────────────────────────────────
+      const xBorder = {
+        top:    { style: 'thin', color: { rgb: 'CBD5E1' } },
+        bottom: { style: 'thin', color: { rgb: 'CBD5E1' } },
+        left:   { style: 'thin', color: { rgb: 'CBD5E1' } },
+        right:  { style: 'thin', color: { rgb: 'CBD5E1' } }
+      };
+      const xTitle = (sz = 15) => ({
+        font: { bold: true, sz, color: { rgb: 'FFFFFF' } },
+        fill: { fgColor: { rgb: '16A34A' } },
+        alignment: { horizontal: 'center', vertical: 'center' },
+        border: xBorder
+      });
+      const xSub = {
+        font: { italic: true, sz: 9, color: { rgb: 'FFFFFF' } },
+        fill: { fgColor: { rgb: '0F172A' } },
+        alignment: { horizontal: 'center', vertical: 'center' },
+        border: xBorder
+      };
+      const xInfo = {
+        font: { italic: true, sz: 9, color: { rgb: '64748B' } },
+        fill: { fgColor: { rgb: 'F1F5F9' } },
+        alignment: { horizontal: 'center' },
+        border: xBorder
+      };
+      const xHead = {
+        font: { bold: true, sz: 10, color: { rgb: 'FFFFFF' } },
+        fill: { fgColor: { rgb: '1E293B' } },
+        alignment: { horizontal: 'center', vertical: 'center' },
+        border: xBorder
+      };
+      const xCell = (bg: string, fg = '0F172A', align = 'left', bold = false) => ({
+        font: { bold, sz: 10, color: { rgb: fg } },
+        fill: { fgColor: { rgb: bg } },
+        alignment: { horizontal: align, vertical: 'center' },
+        border: xBorder
+      });
+      const applyRow = (ws: any, row: number, cols: string[], style: any) =>
+        cols.forEach(c => { if (ws[`${c}${row}`]) ws[`${c}${row}`].s = style; });
+
       // ── Hoja 1: KPIs ──────────────────────────────────────────────
+      const prom = this.kpis.promedioSatisfaccion;
+      const promColor = prom >= 4 ? { bg: 'DCFCE7', fg: '15803D' }
+        : prom >= 3                ? { bg: 'FEF9C3', fg: 'A16207' }
+        :                            { bg: 'FEE2E2', fg: 'B91C1C' };
+
+      const kpiRows = [
+        { label: 'Total Respuestas',          value: this.kpis.totalRespuestas,        lBg: 'EFF6FF', vBg: 'DBEAFE', vFg: '1D4ED8' },
+        { label: 'Egresados Encuestados',     value: this.kpis.egresadosEncuestados,   lBg: 'ECFDF5', vBg: 'BBF7D0', vFg: '065F46' },
+        { label: 'Promedio de Satisfacción',  value: this.kpis.promedioSatisfaccion,   lBg: promColor.bg, vBg: promColor.bg, vFg: promColor.fg },
+        { label: 'Mejor Escuela Profesional', value: this.kpis.mejorEscuela,           lBg: 'F0FDF4', vBg: 'DCFCE7', vFg: '15803D' },
+        { label: 'Peor Escuela Profesional',  value: this.kpis.peorEscuela,            lBg: 'FFF1F2', vBg: 'FEE2E2', vFg: 'B91C1C' },
+        { label: 'Tasa de Participación (%)', value: this.kpis.tasaParticipacion,      lBg: 'F0FDFA', vBg: 'CCFBF1', vFg: '0F766E' },
+      ];
+
       const wsKpis = XLSX.utils.aoa_to_sheet([
-        ['DASHBOARD DE ENCUESTAS - UNSM'],
-        [`Encuesta: ${encuestaLabel}   |   Facultad: ${this.carrera || 'Todas'}   |   Fecha: ${fecha}`],
-        [],
+        ['UNIVERSIDAD NACIONAL DE SAN MARTÍN — SISTEMA DE ENCUESTAS'],
         ['INDICADORES CLAVE DE DESEMPEÑO (KPIs)'],
-        ['Indicador', 'Valor'],
-        ['Total Respuestas',        this.kpis.totalRespuestas],
-        ['Egresados Encuestados',   this.kpis.egresadosEncuestados],
-        ['Promedio Satisfacción',   this.kpis.promedioSatisfaccion],
-        ['Mejor Escuela',           this.kpis.mejorEscuela],
-        ['Peor Escuela',            this.kpis.peorEscuela],
-        ['Tasa Participación (%)',  this.kpis.tasaParticipacion],
+        [`Encuesta: ${encuestaLabel}   •   Facultad: ${this.carrera || 'Todas'}   •   Generado: ${fecha}`],
+        [],
+        ['INDICADOR', 'VALOR'],
+        ...kpiRows.map(k => [k.label, k.value])
       ]);
-      wsKpis['!cols'] = [{ wch: 30 }, { wch: 40 }];
+      wsKpis['!cols'] = [{ wch: 38 }, { wch: 48 }];
+      wsKpis['!rows'] = [{ hpt: 34 }, { hpt: 22 }, { hpt: 16 }, { hpt: 6 }, { hpt: 20 }, ...Array(6).fill({ hpt: 22 })];
       wsKpis['!merges'] = [
         { s: { r: 0, c: 0 }, e: { r: 0, c: 1 } },
         { s: { r: 1, c: 0 }, e: { r: 1, c: 1 } },
-        { s: { r: 3, c: 0 }, e: { r: 3, c: 1 } },
+        { s: { r: 2, c: 0 }, e: { r: 2, c: 1 } },
       ];
+      applyRow(wsKpis, 1, ['A','B'], xTitle(16));
+      applyRow(wsKpis, 2, ['A','B'], xSub);
+      applyRow(wsKpis, 3, ['A','B'], xInfo);
+      applyRow(wsKpis, 5, ['A','B'], xHead);
+      kpiRows.forEach((k, i) => {
+        const r = i + 6;
+        if (wsKpis[`A${r}`]) wsKpis[`A${r}`].s = xCell(k.lBg, '334155', 'left', true);
+        if (wsKpis[`B${r}`]) wsKpis[`B${r}`].s = xCell(k.vBg, k.vFg, 'center', true);
+      });
       XLSX.utils.book_append_sheet(workbook, wsKpis, 'KPIs');
 
       // ── Hoja 2: Comparativo por Escuela ───────────────────────────
       if (this.comparativoPorEscuela.length) {
+        const nivelFn = (p: number) => p >= 4 ? 'Bueno' : p >= 3 ? 'Regular' : 'Crítico';
+        const nivelColors: Record<string, { bg: string, fg: string }> = {
+          'Bueno':   { bg: 'DCFCE7', fg: '15803D' },
+          'Regular': { bg: 'FEF9C3', fg: 'A16207' },
+          'Crítico': { bg: 'FEE2E2', fg: 'B91C1C' },
+        };
+
         const wsComp = XLSX.utils.aoa_to_sheet([
-          ['COMPARATIVO POR ESCUELA PROFESIONAL'],
-          [`Fecha: ${fecha}`],
+          ['COMPARATIVO POR ESCUELA PROFESIONAL — UNSM'],
+          [`Encuesta: ${encuestaLabel}   •   Generado: ${fecha}`],
           [],
-          ['Escuela Profesional', 'Promedio Satisfacción', 'Total Respuestas'],
+          ['Escuela Profesional', 'Promedio Satisfacción', 'Total Respuestas', 'Nivel'],
           ...this.comparativoPorEscuela.map(e => [
             e.escuelaProfesional,
             e.promedioSatisfaccion,
-            e.totalRespuestas
+            e.totalRespuestas,
+            nivelFn(e.promedioSatisfaccion)
           ])
         ]);
-        wsComp['!cols'] = [{ wch: 45 }, { wch: 25 }, { wch: 20 }];
+        wsComp['!cols'] = [{ wch: 52 }, { wch: 22 }, { wch: 18 }, { wch: 14 }];
+        wsComp['!rows'] = [{ hpt: 30 }, { hpt: 16 }, { hpt: 6 }, { hpt: 20 }];
         wsComp['!merges'] = [
-          { s: { r: 0, c: 0 }, e: { r: 0, c: 2 } },
-          { s: { r: 1, c: 0 }, e: { r: 1, c: 2 } },
+          { s: { r: 0, c: 0 }, e: { r: 0, c: 3 } },
+          { s: { r: 1, c: 0 }, e: { r: 1, c: 3 } },
         ];
+        applyRow(wsComp, 1, ['A','B','C','D'], xTitle(14));
+        applyRow(wsComp, 2, ['A','B','C','D'], xSub);
+        applyRow(wsComp, 4, ['A','B','C','D'], xHead);
+        this.comparativoPorEscuela.forEach((e, i) => {
+          const r = i + 5;
+          const bg = i % 2 === 0 ? 'FFFFFF' : 'F8FAFC';
+          const niv = nivelFn(e.promedioSatisfaccion);
+          const nc  = nivelColors[niv];
+          if (wsComp[`A${r}`]) wsComp[`A${r}`].s = xCell(bg, '0F172A', 'left');
+          if (wsComp[`B${r}`]) wsComp[`B${r}`].s = xCell(bg, '0F172A', 'center', true);
+          if (wsComp[`C${r}`]) wsComp[`C${r}`].s = xCell(bg, '334155', 'center');
+          if (wsComp[`D${r}`]) wsComp[`D${r}`].s = xCell(nc.bg, nc.fg, 'center', true);
+        });
         XLSX.utils.book_append_sheet(workbook, wsComp, 'Comparativo Escuelas');
       }
 
       // ── Hoja 3: Distribución de Sentimiento ───────────────────────
       if (this.distribucionSentimiento.length) {
+        const sentMap: Record<string, { bg: string, fg: string }> = {
+          'Muy Satisfecho':   { bg: 'DCFCE7', fg: '15803D' },
+          'Satisfecho':       { bg: 'ECFDF5', fg: '166534' },
+          'Neutral':          { bg: 'FEF9C3', fg: 'A16207' },
+          'Insatisfecho':     { bg: 'FEE2E2', fg: 'B91C1C' },
+          'Muy Insatisfecho': { bg: 'FEF2F2', fg: '7F1D1D' },
+        };
+
         const wsSent = XLSX.utils.aoa_to_sheet([
-          ['DISTRIBUCIÓN DE SENTIMIENTO'],
-          [`Fecha: ${fecha}`],
+          ['DISTRIBUCIÓN DE SENTIMIENTO — UNSM'],
+          [`Encuesta: ${encuestaLabel}   •   Generado: ${fecha}`],
           [],
-          ['Categoría', 'Porcentaje (%)'],
-          ...this.distribucionSentimiento.map(s => [s.categoria, s.porcentaje])
+          ['Categoría de Satisfacción', 'Porcentaje (%)', 'Escala Visual (0 – 100 %)'],
+          ...this.distribucionSentimiento.map(s => {
+            const filled = Math.min(Math.round(s.porcentaje / 5), 20);
+            return [s.categoria, s.porcentaje, '█'.repeat(filled) + '░'.repeat(20 - filled)];
+          })
         ]);
-        wsSent['!cols'] = [{ wch: 25 }, { wch: 20 }];
+        wsSent['!cols'] = [{ wch: 28 }, { wch: 16 }, { wch: 28 }];
+        wsSent['!rows'] = [{ hpt: 28 }, { hpt: 16 }, { hpt: 6 }, { hpt: 20 }];
         wsSent['!merges'] = [
-          { s: { r: 0, c: 0 }, e: { r: 0, c: 1 } },
-          { s: { r: 1, c: 0 }, e: { r: 1, c: 1 } },
+          { s: { r: 0, c: 0 }, e: { r: 0, c: 2 } },
+          { s: { r: 1, c: 0 }, e: { r: 1, c: 2 } },
         ];
+        applyRow(wsSent, 1, ['A','B','C'], xTitle(14));
+        applyRow(wsSent, 2, ['A','B','C'], xSub);
+        applyRow(wsSent, 4, ['A','B','C'], xHead);
+        this.distribucionSentimiento.forEach((s, i) => {
+          const r = i + 5;
+          const sc = sentMap[s.categoria] || { bg: i % 2 === 0 ? 'FFFFFF' : 'F8FAFC', fg: '334155' };
+          if (wsSent[`A${r}`]) wsSent[`A${r}`].s = xCell(sc.bg, sc.fg, 'left',   true);
+          if (wsSent[`B${r}`]) wsSent[`B${r}`].s = xCell(sc.bg, sc.fg, 'center', true);
+          if (wsSent[`C${r}`]) wsSent[`C${r}`].s = { font: { sz: 9, color: { rgb: sc.fg } }, fill: { fgColor: { rgb: sc.bg } }, alignment: { horizontal: 'left', vertical: 'center' }, border: xBorder };
+        });
         XLSX.utils.book_append_sheet(workbook, wsSent, 'Sentimiento');
       }
 

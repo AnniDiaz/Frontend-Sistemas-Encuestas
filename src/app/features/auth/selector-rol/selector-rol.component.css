@@ -2,9 +2,7 @@
 *{
   margin: 0;
   padding: 0;
-  width: 100%;
   box-sizing: border-box;
-
 }
 :root {
   --primary-color: #014e22;
@@ -68,9 +66,10 @@
 }
 
 .logo-wrapper {
-  width: 400px; /* Proporciones ligeramente más estilizadas */
+  width: 100%;
+  max-width: 400px;
   height: 115px;
-  margin-bottom: 0.75rem; /* Reducido de 1.25rem */
+  margin-bottom: 0.75rem;
   display: flex;
   justify-content: center;
 }
@@ -270,21 +269,78 @@
 }
 
 
-/* Responsive */
-@media (max-width: 680px) {
+/* TABLET */
+@media (max-width: 1024px) {
+  .auth-box {
+    width: 45% !important;
+    padding: 1.8rem 1.5rem;
+  }
+  .cont-img {
+    width: 55% !important;
+  }
+  .institution-name {
+    font-size: 1.1rem;
+  }
+}
+
+/* MÓVIL */
+@media (max-width: 768px) {
   .auth-container {
-    height: auto; /* Permite scroll solo en celulares debido al espacio físico de la pantalla */
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
     overflow-y: auto;
+    overflow-x: hidden;
+  }
+  .auth-box {
+    width: 100% !important;
+    padding: 5% 12%;
+    min-height: 100vh;
+    justify-content: center;
+  }
+  .cont-img {
+    display: none;
+  }
+  .logo-wrapper {
+    max-width: 300px;
+    height: auto;
+    min-height: 90px;
+  }.unsm-logo-img{
+    width: 40% !important;
+  }
+  .institution-name{
+    font-size: 1.7rem !important;
+  }
+  .portal-title{
+    font-size: 1.7rem !important;
+  }
+  .institution-name {
+    font-size: 1.5rem;
+  }
+  .portal-title {
+    font-size: 1.2rem;
+  }
+}
+
+/* MÓVIL PEQUEÑO */
+@media (max-width: 480px) {
+  .auth-box {
     padding: 1.5rem 1rem;
   }
   .roles-grid {
-    grid-template-columns: 1fr;
     gap: 1rem;
   }
   .role-card-inner {
-    padding: 1.5rem;
+    padding: 1rem;
+  }
+  .institution-name {
+    font-size: 0.9rem;
+    letter-spacing: 0.02em;
   }
   .portal-title {
-    font-size: 1.65rem;
+    font-size: 1.1rem;
+  }
+  .role-card h3 {
+    font-size: 1.1rem;
   }
 }

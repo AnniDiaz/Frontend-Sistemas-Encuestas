@@ -307,6 +307,30 @@
   margin-top:20px;
 }
 
+.encuestas-loading{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+  padding:80px 20px;
+  color:var(--muted);
+  font-size:.95rem;
+}
+
+.loading-spinner{
+  width:40px;
+  height:40px;
+  border:4px solid var(--border);
+  border-top-color:var(--primary);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+
+@keyframes spin{
+  to{ transform:rotate(360deg); }
+}
+
 .btn-start{
   width:100%;
   border:none;
@@ -525,9 +549,29 @@
   cursor:pointer;
 }
 
+.perfil-avatar i{
+  font-size:34px !important;
+}
 /* ======================================
    RESPONSIVE
 ====================================== */
+
+@media(max-width:900px){
+  .question-card{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:14px;
+  }
+
+  .question-text{
+    margin-bottom:0;
+  }
+
+  .scale{
+    width:100%;
+    justify-content:flex-start;
+  }
+}
 
 @media(max-width:768px){
 
@@ -544,6 +588,12 @@
     flex-direction:column;
     align-items:flex-start;
     gap:20px;
+    padding:18px 16px;
+  }
+
+  .encuestas-wrapper{
+    padding:20px;
+    border-radius:18px;
   }
 
   .encuestas-grid{
@@ -551,7 +601,13 @@
   }
 
   .scale{
-    justify-content:center;
+    justify-content:flex-start;
+    flex-wrap:wrap;
+  }
+
+  .modal-card{
+    padding:20px;
+    border-radius:18px;
   }
 
   .modal-actions{
@@ -561,9 +617,33 @@
   .btn-cancel,
   .btn-confirm{
     width:100%;
+    text-align:center;
+  }
+}
+
+@media(max-width:480px){
+  .dashboard-container{
+    padding:10px;
   }
 
+  .encuestas-wrapper{
+    padding:16px;
+    border-radius:14px;
+  }
 
+  .perfil-name{
+    font-size:24px;
+  }
+
+  .scale button{
+    width:42px;
+    height:42px;
+  }
+
+  .registro-empresa-card{
+    padding:20px;
+    border-radius:18px;
+  }
 }
 
 

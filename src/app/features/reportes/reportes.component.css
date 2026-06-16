@@ -536,6 +536,40 @@
   }
 }
 
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 10px 12px;
+  }
+
+  .header-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary,
+  .btn-pdf,
+  .btn-logout {
+    flex: 1;
+    min-width: 0;
+    justify-content: center;
+  }
+
+  .header-card h1 {
+    font-size: 20px;
+  }
+
+  .kpi-body h2 {
+    font-size: 22px;
+  }
+}
+
 @media (max-width: 640px) {
   .kpi-grid {
     grid-template-columns: 1fr;
@@ -547,5 +581,15 @@
 
   .filter-icon {
     display: none;
+  }
+
+  .header-actions {
+    flex-direction: column;
+  }
+
+  .btn-primary,
+  .btn-pdf,
+  .btn-logout {
+    width: 100%;
   }
 }

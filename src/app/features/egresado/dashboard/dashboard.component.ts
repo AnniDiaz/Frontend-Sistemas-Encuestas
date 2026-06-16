@@ -1,6 +1,8 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { EncuestaStateService } from '../../../core/services/encuesta-state.service';
 import Swal from 'sweetalert2';
 
@@ -39,13 +41,20 @@ ngOnInit(): void {
 
   const idUsuario = this.egresadoActual.idUsuario;
 
-  this.stateService.obtenerEncuestasRespondidas(idUsuario)
-    .subscribe({
-      next: (ids) => {
-        this.encuestasRespondidas.set(ids);
-        this.cargarEncuestas();
-      }
-    });
+  forkJoin({
+    todasEncuestas: this.stateService.obtenerEncuestas(),
+    respondidas: this.stateService
+      .obtenerEncuestasRespondidas(idUsuario)
+      .pipe(catchError(() => of([] as number[])))
+  }).subscribe({
+    next: ({ todasEncuestas, respondidas }) => {
+      this.encuestasRespondidas.set(respondidas);
+      this.aplicarFiltrosYEstado(todasEncuestas);
+    },
+    error: () => {
+      Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron cargar las encuestas' });
+    }
+  });
 }
 cargarFotoReniec(dni: string): void {
   const url = `/reniec/wsdl_reniec.php?dni=${dni}&downloadJSON=true`;
@@ -73,71 +82,44 @@ cargarFotoReniec(dni: string): void {
     }
   });
 }
-cargarEncuestas(): void {
-
+private aplicarFiltrosYEstado(todasEncuestas: any[]): void {
   const rolUsuario = localStorage.getItem('rolUsuario');
   const egresadoActual = this.stateService.egresadoActual();
 
+  let filtradas = todasEncuestas.filter((e: any) =>
+    e.cargo?.toLowerCase() === rolUsuario?.toLowerCase()
+  );
+
+  if (egresadoActual?.fechaEgreso) {
+    const anios = this.obtenerAniosDesdeEgreso(egresadoActual.fechaEgreso);
+    filtradas = filtradas.filter((encuesta: any) => {
+      const min = Math.min(encuesta.inicioRango, encuesta.finRango);
+      const max = Math.max(encuesta.inicioRango, encuesta.finRango);
+      return anios >= min && anios <= max;
+    });
+  }
+
+  const respondidas = this.encuestasRespondidas().map(Number);
+  const conEstado = filtradas.map((e: any) => ({
+    ...e,
+    respondida: respondidas.includes(Number(e.idEncuesta))
+  }));
+
+  this.encuestas.set(conEstado);
+
+  const total = conEstado.length;
+  const totalRespondidas = conEstado.filter((e: any) => e.respondida).length;
+  this.porcentaje.set(
+    total > 0 ? Math.round((totalRespondidas / total) * 100) : 0
+  );
+}
+
+cargarEncuestas(): void {
   this.stateService.obtenerEncuestas().subscribe({
-    next: (data) => {
-
-      console.log('Todas las encuestas:', data);
-
-      let filtradas = data.filter((e: any) =>
-        e.cargo?.toLowerCase() === rolUsuario?.toLowerCase()
-      );
-
-      console.log('Encuestas por rol:', filtradas);
-
-      if (egresadoActual?.fechaEgreso) {
-
-        const anios = this.obtenerAniosDesdeEgreso(
-          egresadoActual.fechaEgreso
-        );
-
-        console.log('Años desde egreso:', anios);
-
-        filtradas = filtradas.filter((encuesta: any) => {
-
-          const min = Math.min(
-            encuesta.inicioRango,
-            encuesta.finRango
-          );
-
-          const max = Math.max(
-            encuesta.inicioRango,
-            encuesta.finRango
-          );
-
-          return anios >= min && anios <= max;
-        });
-      }
-
-      console.log('Encuestas filtradas finales:', filtradas);
-
-      const respondidas = this.encuestasRespondidas().map(Number);
-
-      console.log('IDs respondidas:', respondidas);
-
-      const conEstado = filtradas.map((e: any) => ({
-        ...e,
-        respondida: respondidas.includes(Number(e.idEncuesta))
-      }));
-
-      console.log('Encuestas con estado:', conEstado);
-
-      this.encuestas.set(conEstado);
-    },
-
+    next: (data) => this.aplicarFiltrosYEstado(data),
     error: (err) => {
-
       console.error(err);
-
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No se pudieron cargar las encuestas'
-      });
+      Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron cargar las encuestas' });
     }
   });
 }
@@ -165,12 +147,10 @@ iniciarEncuesta(encuesta: any): void {
   }
 
   // Si no fue respondida, navegar normalmente
-  this.router.navigate([
-    '/egresado/encuesta',
-    encuesta.idEncuesta
-  ]).then(ok => {
-    console.log('Navegación:', ok);
-  });
+  this.router.navigate(
+    ['/egresado/encuesta', encuesta.idEncuesta],
+    { state: { nombreEncuesta: encuesta.nombre } }
+  );
 }
   cerrarModal(): void {
     this.modalInstrucciones.set(false);
@@ -289,13 +269,7 @@ const payload = {
     );
   }
 
-readonly porcentaje = computed(() => {
-  const encuestas = this.encuestas();
-  const total = encuestas.length;
-  if (total === 0) return 0;
-  const respondidas = encuestas.filter(e => e.respondida).length;
-  return Math.round((respondidas / total) * 100);
-});
+porcentaje = signal(0);
   logout(): void {
     this.stateService.logout();
     localStorage.clear();

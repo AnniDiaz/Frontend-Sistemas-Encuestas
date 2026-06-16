@@ -1,6 +1,5 @@
 import {
   Component,
-  computed,
   inject,
   OnInit,
   signal
@@ -24,33 +23,23 @@ export class EncuestaResponderComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly encuestaService = inject(EncuestaStateService);
 
+  private rol = '';
+
   encuesta = signal<any>(null);
+  nombreEncuesta = signal<string>('Encuesta');
+  respuestas = signal<Record<number, any>>({});
+  progreso = signal(0);
 
-respuestas = signal<Record<number, any>>({});
-  progreso = computed(() => {
-
-    const encuesta = this.encuesta();
-
-    if (!encuesta?.dimensiones) {
-      return 0;
-    }
-
-    const totalItems =
-      encuesta.dimensiones
-        .flatMap((d: any) => d.items || [])
-        .length;
-
-    const respondidas =
-      Object.keys(this.respuestas()).length;
-
-    return totalItems > 0
-      ? Math.round(
-          (respondidas / totalItems) * 100
-        )
-      : 0;
-  });
+  private totalPreguntas = 0;
 
   ngOnInit(): void {
+
+    this.rol = this.route.snapshot.data['rol'] || 'egresado';
+
+    const nombre = history.state?.nombreEncuesta;
+    if (nombre) {
+      this.nombreEncuesta.set(nombre);
+    }
 
     const idEncuesta = Number(
       this.route.snapshot.paramMap.get('id')
@@ -62,6 +51,16 @@ respuestas = signal<Record<number, any>>({});
     }
 
     this.cargarEncuesta(idEncuesta);
+  }
+
+  private getUsuarioActual(): any {
+    const key = this.rol === 'empleador' ? 'empleadorActual' : 'egresadoActual';
+    const stored = localStorage.getItem(key);
+    return stored ? JSON.parse(stored) : null;
+  }
+
+  private rutaDashboard(): string {
+    return this.rol === 'empleador' ? '/empleador' : '/egresado';
   }
 
   cargarEncuesta(idEncuesta: number): void {
@@ -77,6 +76,8 @@ respuestas = signal<Record<number, any>>({});
           );
 
           this.encuesta.set(data);
+          this.totalPreguntas = (data.dimensiones ?? [])
+            .flatMap((d: any) => d.items ?? []).length;
         },
         error: (err) => {
           console.error(
@@ -96,6 +97,13 @@ seleccionarRespuesta(
     ...prev,
     [idItem]: valor
   }));
+
+  const respondidas = Object.keys(this.respuestas()).length;
+  this.progreso.set(
+    this.totalPreguntas > 0
+      ? Math.round((respondidas / this.totalPreguntas) * 100)
+      : 0
+  );
 }
 
 enviarEncuesta(): void {
@@ -129,11 +137,9 @@ enviarEncuesta(): void {
     return;
   }
 
-  // Obtener usuario del localStorage
-  const egresadoStorage =
-    localStorage.getItem('egresadoActual');
+  const usuario = this.getUsuarioActual();
 
-  if (!egresadoStorage) {
+  if (!usuario) {
 
     Swal.fire({
       icon: 'error',
@@ -144,18 +150,19 @@ enviarEncuesta(): void {
     return;
   }
 
-  const egresado =
-    JSON.parse(egresadoStorage);
+  const idEncuesta = Number(this.route.snapshot.paramMap.get('id'));
 
-const respuestasPayload =
-  Object.entries(this.respuestas())
-    .map(([idItem, valor]) => ({
-      idItem: Number(idItem),
-      valor: String(valor)
-    }));
+  const respuestasPayload =
+    Object.entries(this.respuestas())
+      .map(([idItem, valor]) => ({
+        idItem: Number(idItem),
+        valor: String(valor)
+      }));
 
   const payload = {
-    idUsuario: egresado.idUsuario,
+    idUsuario: usuario.idUsuario,
+    idEncuesta,
+    nombreEncuesta: this.nombreEncuesta(),
     respuestas: respuestasPayload
   };
 
@@ -173,9 +180,7 @@ const respuestasPayload =
           confirmButtonText: 'Aceptar'
         }).then(() => {
 
-          this.router.navigate([
-            '/dashboard-empleador'
-          ]);
+          this.router.navigate([this.rutaDashboard()]);
 
         });
 
@@ -195,9 +200,6 @@ const respuestasPayload =
 
 }
   volver(): void {
-
-    this.router.navigate([
-      '/dashboard-empleador'
-    ]);
+    this.router.navigate([this.rutaDashboard()]);
   }
 }

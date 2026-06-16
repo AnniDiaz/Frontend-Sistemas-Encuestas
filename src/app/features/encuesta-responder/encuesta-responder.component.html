@@ -18,14 +18,12 @@
       <div class="header-row">
 
         <div>
-          <h1>{{ encuesta()?.nombre || 'Encuesta' }}</h1>
-          <h2>para los Egresados</h2>
+          <h1>{{ encuesta()?.nombre || nombreEncuesta() }}</h1>
         </div>
 
         <div class="progress-box">
 
-          <strong>{{ progreso() }}%</strong>
-
+<strong>Avance de la encuesta: {{ progreso() }}%</strong>
           <div class="progress-bar">
             <div
               class="progress-fill"

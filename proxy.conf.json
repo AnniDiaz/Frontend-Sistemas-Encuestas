@@ -6,5 +6,13 @@
     "pathRewrite": {
       "^/reniec": "/wsdl"
     }
+  },
+  "/sunat": {
+    "target": "https://ws3.pide.gob.pe",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/sunat": ""
+    }
   }
 }

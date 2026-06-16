@@ -53,9 +53,38 @@
               }}
             </h2>
 
-
             <div class="perfil-facultad">
               DNI: {{ egresadoActual?.ruc || egresadoActual?.dni }}
+            </div>
+
+            <div class="perfil-info-badges">
+              @if (egresadoActual?.escuelaProfesional) {
+                <span class="perfil-badge">
+                  <span class="perfil-badge-dot"></span>
+                  {{ egresadoActual?.escuelaProfesional }}
+                </span>
+              }
+              @if (egresadoActual?.facultad) {
+                <span class="perfil-badge" style="background:#f8fafc; color:#64748b; border-color:#e2e8f0;">
+                  <span class="perfil-badge-dot" style="background:#94a3b8;"></span>
+                  {{ egresadoActual?.facultad }}
+                </span>
+              }
+            </div>
+
+            <div class="perfil-info-row">
+              @if (egresadoActual?.fechaEgreso) {
+                <span class="perfil-chip">
+                  <span class="chip-label">Fecha de egreso</span>
+                  {{ egresadoActual?.fechaEgreso | date:'dd/MM/yyyy':'UTC' }}
+                </span>
+              }
+              @if (egresadoActual?.semestreEgreso) {
+                <span class="perfil-chip">
+                  <span class="chip-label">Semestre de egreso</span>
+                  {{ egresadoActual?.semestreEgreso }}
+                </span>
+              }
             </div>
           </div>
 

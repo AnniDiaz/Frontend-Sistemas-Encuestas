@@ -1,7 +1,8 @@
-import { Component, inject, signal, OnInit, computed } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 import Swal from 'sweetalert2';
 
@@ -29,75 +30,125 @@ export class DashboardComponent implements OnInit {
   private readonly router =
     inject(Router);
 
-  empleadorActual: any;
+  private readonly http =
+    inject(HttpClient);
+
+  empleadorActual = signal<any>(null);
 
   // =========================
   // REGISTRO EMPRESA
   // =========================
 
-  mostrarRegistroEmpresa = false;
+  cargandoRuc = false;
+  datosRuc: any = null;
 
   rucTemporal = '';
-
   razonSocial = '';
-
   email = '';
 
   // =========================
   // ENCUESTAS
   // =========================
 
-  modalInstrucciones = signal(false);
-
   encuestasRespondidas =
     signal<number[]>([]);
-
-  selectedEncuesta =
-    signal<any | null>(null);
 
   encuestas =
     signal<any[]>([]);
 
-  respuestas =
-    signal<Record<number, number>>({});
-
 ngOnInit(): void {
 
-  this.empleadorActual = JSON.parse(
-    localStorage.getItem(
-      'empleadorActual'
-    ) || '{}'
+  this.empleadorActual.set(
+    JSON.parse(
+      localStorage.getItem('empleadorActual') || '{}'
+    )
   );
 
   const tieneEmpresaRegistrada =
-    !!this.empleadorActual?.name &&
-    !!this.empleadorActual?.email;
+    !!this.empleadorActual()?.name;
 
   if (!tieneEmpresaRegistrada) {
 
     this.rucTemporal =
-      this.empleadorActual?.ruc ||
-      this.empleadorActual?.dni ||
-      localStorage.getItem(
-        'rucTemporal'
-      ) ||
+      this.empleadorActual()?.ruc ||
+      this.empleadorActual()?.dni ||
+      localStorage.getItem('rucTemporal') ||
       '';
 
     this.razonSocial =
-      this.empleadorActual?.name || '';
+      this.empleadorActual()?.name || '';
 
     this.email =
-      this.empleadorActual?.email || '';
+      this.empleadorActual()?.email || '';
 
-    this.mostrarRegistroEmpresa = true;
+    Swal.fire({
+      title: 'Verificando empresa',
+      text: 'Consultando SUNAT, por favor espere...',
+      allowOutsideClick: false,
+      showConfirmButton: false,
+      didOpen: () => { Swal.showLoading(); }
+    });
+
+    this.fetchDatosSunat(this.rucTemporal);
 
     return;
   }
 
-  this.mostrarRegistroEmpresa = false;
-
   this.cargarEncuestasRespondidas();
 }
+
+  // =========================
+  // SUNAT
+  // =========================
+
+  fetchDatosSunat(ruc: string): void {
+    if (!ruc) {
+      this.autoRegistrar();
+      return;
+    }
+    this.cargandoRuc = true;
+    const url = `/sunat/Rest/Sunat/DatosPrincipales?numruc=${ruc}`;
+
+    this.http.get(url, { responseType: 'text' }).subscribe({
+      next: (xml: string) => {
+        this.cargandoRuc = false;
+        const datos = this.parseSunatXml(xml);
+        if (datos?.nombre) {
+          this.datosRuc    = datos;
+          this.razonSocial = datos.nombre;
+        }
+        this.autoRegistrar();
+      },
+      error: () => {
+        this.cargandoRuc = false;
+        this.autoRegistrar();
+      }
+    });
+  }
+
+  private parseSunatXml(xml: string): any {
+    try {
+      const doc = new DOMParser().parseFromString(xml, 'text/xml');
+      const get = (tag: string) =>
+        doc.querySelector(tag)?.textContent?.trim() ?? '';
+
+      return {
+        ruc:         get('ddp_numruc'),
+        nombre:      get('ddp_nombre').trim(),
+        estado:      get('desc_estado').trim(),
+        esActivo:    get('esActivo')  === 'true',
+        esHabido:    get('esHabido')  === 'true',
+        tipoEmpresa: get('desc_tpoemp').trim(),
+        via:         `${get('desc_tipvia')} ${get('ddp_nomvia')}`.trim(),
+        sector:      get('ddp_nomzon').trim(),
+        distrito:    get('desc_dist').trim(),
+        provincia:   get('desc_prov').trim(),
+        depto:       get('desc_dep').trim(),
+      };
+    } catch {
+      return null;
+    }
+  }
 
   // =========================
   // CARGAR RESPONDIDAS
@@ -106,7 +157,7 @@ ngOnInit(): void {
   cargarEncuestasRespondidas(): void {
 
     const idUsuario =
-      this.empleadorActual.idUsuario;
+      this.empleadorActual()?.idUsuario;
 
     this.stateService
       .obtenerEncuestasRespondidas(
@@ -130,89 +181,42 @@ ngOnInit(): void {
   }
 
   // =========================
-  // GUARDAR EMPRESA
+  // REGISTRO AUTOMÁTICO
   // =========================
 
-  guardarEmpresa(): void {
+  autoRegistrar(): void {
 
-    if (!this.razonSocial.trim()) {
+    const empresa = {
+      idUsuario: this.empleadorActual()?.idUsuario,
+      dni:       this.rucTemporal,
+      ruc:       this.rucTemporal,
+      name:      this.razonSocial || this.rucTemporal,
+      email:     this.email,
+      tipo:      'empresa'
+    };
 
-      Swal.fire({
-        icon: 'warning',
-        title: 'Razón social requerida',
-        text: 'Ingrese la razón social de la empresa'
-      });
-
-      return;
-    }
-
-    if (!this.email.trim()) {
-
-      Swal.fire({
-        icon: 'warning',
-        title: 'Correo requerido',
-        text: 'Ingrese un correo electrónico'
-      });
-
-      return;
-    }
-
-const empresa = {
-
-  idUsuario:
-    this.empleadorActual?.idUsuario,
-
-  dni:
-    this.rucTemporal,
-
-  ruc:
-    this.rucTemporal,
-
-  name:
-    this.razonSocial,
-
-  email:
-    this.email,
-
-  tipo:
-    'empresa'
-};
     this.usuarioService
       .guardar(empresa)
       .subscribe({
 
         next: (usuario: any) => {
 
-          this.empleadorActual =
-            usuario;
-
           localStorage.setItem(
             'empleadorActual',
             JSON.stringify(usuario)
           );
 
-          localStorage.removeItem(
-            'rucTemporal'
-          );
+          localStorage.removeItem('rucTemporal');
 
-          this.mostrarRegistroEmpresa =
-            false;
-
-          this.cargarEncuestasRespondidas();
-
-          Swal.fire({
-            icon: 'success',
-            title: 'Datos guardados',
-            text: 'La información de la empresa fue registrada correctamente'
-          });
+          Swal.close();
+          window.location.reload();
         },
 
         error: () => {
-
           Swal.fire({
             icon: 'error',
-            title: 'Error',
-            text: 'No se pudo registrar la empresa'
+            title: 'Error al registrar',
+            text: 'No se pudo obtener los datos de la empresa. Intente cerrar sesión y volver a ingresar.'
           });
         }
       });
@@ -236,7 +240,7 @@ const empresa = {
         next: (data) => {
 
           const respondidas =
-            this.encuestasRespondidas();
+            this.encuestasRespondidas().map(Number);
 
           const filtradas = data
             .filter((e: any) =>
@@ -247,12 +251,16 @@ const empresa = {
               ...e,
               respondida:
                 respondidas.includes(
-                  e.idEncuesta
+                  Number(e.idEncuesta)
                 )
             }));
 
-          this.encuestas.set(
-            filtradas
+          this.encuestas.set(filtradas);
+
+          const total = filtradas.length;
+          const totalRespondidas = filtradas.filter((e: any) => e.respondida).length;
+          this.porcentajeProgreso.set(
+            total > 0 ? Math.round((totalRespondidas / total) * 100) : 0
           );
         },
 
@@ -267,21 +275,7 @@ const empresa = {
       });
   }
 
-readonly porcentajeProgreso = computed(() => {
-
-  const total = this.encuestas().length;
-
-  if (total === 0) {
-    return 0;
-  }
-
-  const respondidas =
-    this.encuestasRespondidas().length;
-
-  return Math.round(
-    (respondidas / total) * 100
-  );
-});
+porcentajeProgreso = signal(0);
   iniciarEncuesta(
     encuesta: any
   ): void {
@@ -297,140 +291,10 @@ readonly porcentajeProgreso = computed(() => {
       return;
     }
 
-    this.selectedEncuesta.set(
-      encuesta
+    this.router.navigate(
+      ['/empleador/encuesta', encuesta.idEncuesta],
+      { state: { nombreEncuesta: encuesta.nombre } }
     );
-
-    this.respuestas.set({});
-
-    this.modalInstrucciones.set(
-      true
-    );
-  }
-
-  cerrarModal(): void {
-
-    this.modalInstrucciones.set(
-      false
-    );
-
-    this.selectedEncuesta.set(
-      null
-    );
-
-    this.respuestas.set({});
-  }
-
-  seleccionarRespuesta(
-    itemId: number,
-    valor: number
-  ): void {
-    this.respuestas.update(prev => ({
-      ...prev,
-      [itemId]: valor
-    }));
-  }
-
-  obtenerRespondidas(): number {
-
-    return Object.keys(
-      this.respuestas()
-    ).length;
-  }
-
-  obtenerTotalPreguntas(): number {
-
-    const encuesta =
-      this.selectedEncuesta();
-
-    if (!encuesta) {
-      return 0;
-    }
-
-    return encuesta.dimensiones.reduce(
-      (
-        total: number,
-        d: any
-      ) =>
-        total +
-        d.items.length,
-      0
-    );
-  }
-
-  encuestaCompleta(): boolean {
-
-    return (
-      this.obtenerRespondidas() ===
-      this.obtenerTotalPreguntas()
-    );
-  }
-
-  finalizarEncuesta(): void {
-
-    if (!this.encuestaCompleta()) {
-
-      const faltan =
-        this.obtenerTotalPreguntas() -
-        this.obtenerRespondidas();
-
-      Swal.fire({
-        icon: 'warning',
-        title: 'Encuesta incompleta',
-        text: `Faltan ${faltan} preguntas por responder`
-      });
-
-      return;
-    }
-
-const respuestasPayload =
-  Object.entries(this.respuestas())
-  .map(([idItem, valor]) => ({
-    idItem: Number(idItem),
-    valor: String(valor)
-  }));
-
-    const payload = {
-      idUsuario: this.empleadorActual.idUsuario,
-      idEncuesta: this.selectedEncuesta()?.idEncuesta,
-      nombreEncuesta: this.selectedEncuesta()?.nombre,
-      respuestas: respuestasPayload
-    };
-
-    this.stateService.guardarRespuestasExamen(payload).subscribe({
-      next: () => {
-        const encuestaActual = this.selectedEncuesta();
-       if (encuestaActual) {
-
-  this.encuestasRespondidas.update(ids => [
-    ...ids,
-    encuestaActual.idEncuesta
-  ]);
-
-  this.encuestas.update(encuestas =>
-    encuestas.map(e =>
-      e.idEncuesta === encuestaActual.idEncuesta
-        ? { ...e, respondida: true }
-        : e
-    )
-  );
-}
-        this.cerrarModal();
-        this.cargarEncuestas();
-        Swal.fire({
-          icon: 'success',
-          title: 'Enviado',
-          text: 'Encuesta guardada correctamente'
-        });
-      },
-      error: () => {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'No se pudo guardar la encuesta'
-        });
-      }
-    });
   }
 
   logout(): void {

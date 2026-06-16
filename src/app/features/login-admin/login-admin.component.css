@@ -1,8 +1,9 @@
-*{
-  margin: 0px;
-  padding: 0px;
-  box-sizing: 0px;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
+
 .container {
   display: flex;
   min-height: 100vh;
@@ -13,11 +14,10 @@
 
 /* PANEL IZQUIERDO */
 .left {
-
   backdrop-filter: blur(10px);
   display: flex;
   padding: 30px 50px;
-  width: 18% !important;
+  width: 28% !important;
   flex-direction: column;
   justify-content: center;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
@@ -72,8 +72,8 @@
 }
 
 .form-group input {
-  width: 87%;
-  padding: 13px 32px;
+  width: 100%;
+  padding: 13px 40px 13px 38px;
   border-radius: 12px;
   border: 1px solid #e2e8f0;
   background: #f8fafc;
@@ -84,19 +84,27 @@
 .toggle-eye {
   background: none;
   border: none;
-  margin-top: -30px !important;
   cursor: pointer;
   position: absolute;
-  right: -15px
-  }
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
 .form-group input:focus {
+  outline: none;
   border-color: #009531;
   background: #ffffff;
   box-shadow: 0 0 0 4px rgba(0, 149, 49, 0.15);
 }
 
 .form-group input:hover {
-  border-color: #cbd5f5;
+  border-color: #cbd5e1;
 }
 
 /* ICONOS */
@@ -152,6 +160,7 @@
   background: #009531;
   cursor: pointer;
   transition: all 0.3s ease;
+  min-height: 50px;
 }
 
 .btn:hover {
@@ -170,7 +179,6 @@
 .right {
   flex: 1;
   width: 80% !important;
-
   position: relative;
   background-image: url("/assets/img/portada_unsm.jpg");
   background-size: cover;
@@ -178,75 +186,181 @@
   background-repeat: no-repeat;
 }
 
-/* Capa negra encima de la imagen */
 .right::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6); /* 👈 aquí ajustas oscuridad */
+  background: rgba(0, 0, 0, 0.6);
 }
 
-/* TABLET Y CELULAR */
+/* ANIMACION */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================
+   TABLET (≤1024px)
+========================================== */
 @media (max-width: 1024px) {
   .container {
     justify-content: center;
     align-items: center;
-    padding: 20px;
+    background-image: url("/assets/img/portada_unsm.jpg");
+    background-size: cover;
+    background-position: center;
+    background-color: #003d18;
+  }
 
-    /* 👇 USAR IMAGEN COMO FONDO */
-    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5));
+  .container::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 0;
+  }
+
+  .left {
+    position: relative;
+    z-index: 1;
+    flex: 0 1 480px;
+    width: auto !important;
+    margin: auto;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(16px);
+    padding: 40px 36px;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.3);
+  }
+
+  .right {
+    display: none;
+  }
+}
+
+/* ==========================================
+   MÓVIL (≤768px)
+========================================== */
+@media (max-width: 768px) {
+  .container {
+    min-height: 100dvh;
+    padding: 1.25rem;
+    align-items: center;
   }
 
   .left {
     flex: 0 1 100%;
-    max-width: 500px;
-    margin: auto;
-    border-radius: 16px;
-
-    /* 👇 efecto glass bonito */
-    background: rgba(255, 255, 255, 0.9);
+    max-width: 440px;
+    padding: 2rem 1.5rem;
+    border-radius: 18px;
   }
 
-  .right {
-    display: none; /* ahora sí se puede ocultar */
+  .brand-row img {
+    width: 120px;
+  }
+
+  .left h1 {
+    font-size: 20px;
+  }
+
+  .welcome-subtitle {
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  .form-group input {
+    padding: 12px 40px 12px 36px;
+    font-size: 15px;
+    min-height: 50px;
+  }
+
+  .btn {
+    padding: 14px;
+    font-size: 15px;
+    min-height: 52px;
+    border-radius: 14px;
   }
 }
 
-@media (max-width: 640px) {
+/* ==========================================
+   MÓVIL PEQUEÑO (≤480px)
+========================================== */
+@media (max-width: 480px) {
   .container {
-    padding: 15px;
-
-    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6));
+    padding: 1rem;
   }
 
   .left {
-    padding: 35px 20px;
-    border-radius: 14px;
-    background: rgba(255,255,255,0.92);
-    backdrop-filter: blur(8px);
+    padding: 1.75rem 1.25rem;
+    border-radius: 16px;
+    max-width: 100%;
+  }
+
+  .brand-row img {
+    width: 100px;
+  }
+
+  .left h1 {
+    font-size: 17px;
+  }
+
+  .welcome-subtitle {
+    font-size: 12px;
+    margin-bottom: 14px;
+  }
+
+  .form-group {
+    margin-bottom: 14px;
+  }
+
+  .form-group label {
+    font-size: 12px;
+  }
+
+  .form-group input {
+    padding: 11px 38px 11px 34px;
+    font-size: 14px;
+    min-height: 48px;
+    border-radius: 10px;
+  }
+
+  .btn {
+    padding: 13px;
+    font-size: 14px;
+    min-height: 50px;
+    border-radius: 12px;
+  }
+
+  .footer {
+    margin-top: 18px;
+    font-size: 10px;
   }
 }
-@media (max-width: 500px) {
 
-
+/* ==========================================
+   MÓVIL MUY PEQUEÑO (≤360px)
+========================================== */
+@media (max-width: 360px) {
   .left {
-    margin: 0px 20px;
-    width: 80%;
+    padding: 1.5rem 1rem;
     border-radius: 14px;
-    background: rgba(255,255,255,0.92);
-    backdrop-filter: blur(8px);
   }
-}
 
-
-/* ANIMACION */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(15px);
+  .brand-row img {
+    width: 85px;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  .left h1 {
+    font-size: 15px;
+  }
+
+  .form-group input {
+    font-size: 13px;
+    min-height: 46px;
+  }
+
+  .btn {
+    font-size: 13px;
+    min-height: 48px;
   }
 }

@@ -71,21 +71,21 @@
 }
 
 .back-link {
-  align-items: left !important;
+  align-items: center;
   gap: 0.35rem;
   border: none;
-
   z-index: 999;
-  margin-bottom: -20px;
+  margin-bottom: -1.5rem;
   background: transparent;
-
   color: #b9b9b9;
   font-family: inherit;
   font-size: 0.6rem;
   font-weight: 600;
   cursor: pointer;
-  padding: 0;
+  padding: 0.25rem 0;
   transition: color 0.2s ease;
+  min-height: 44px;
+  display: flex;
 }
 .back-link p{
   font-size: 15px;
@@ -271,17 +271,92 @@ text-align: left !important;
   color: #94a3b8;
 }
 
-/* Modo Responsivo */
-@media (max-width: 640px) {
-  .auth-container {
-    height: auto;
-    overflow-y: auto;
-    padding: 1.5rem 1rem;
+/* TABLET */
+@media (max-width: 1024px) {
+  .auth-box {
+    width: 45% !important;
   }
-  .login-card {
-    padding: 2rem 1.25rem;
-  }
-  .login-header h2 {
-    font-size: 1.35rem;
+  .cont-img {
+    width: 55% !important;
   }
 }
+
+/* MÓVIL */
+@media (max-width: 768px) {
+  .auth-container {
+    flex-direction: column;
+    height: auto;
+    min-height: 100dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: linear-gradient(160deg, #e6f4ed 0%, #f8fafc 45%);
+  }
+
+  .auth-box {
+    width: 100% !important;
+
+    padding: 10%;
+    justify-content: flex-start;
+    align-items: center;
+    position: relative;
+  }
+
+  /* Barra verde superior */
+  .auth-box::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #009A44 0%, #005826 100%);
+    z-index: 100;
+  }
+
+
+  .login-wrapper {
+    max-width: 440px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+
+
+  .login-card {
+    border-radius: 20px;
+    width: 80%;
+    margin-left: -20% !important;
+    padding: 1.5rem 1.25rem;
+
+  }
+
+  .unsm-logo-img {
+    width: 120px;
+    height: 120px;
+    margin-top: 10px !important;
+  }
+.back-link{
+  margin-left: -20% !important;
+  margin-bottom: -10px;
+}
+  .input-control {
+    padding: 1rem 1.25rem;
+    font-size: 1.05rem;
+    min-height: 52px;
+  }
+
+  .btn-submit {
+    padding: 1rem;
+    font-size: 0.98rem;
+    min-height: 52px;
+    border-radius: 14px;
+    box-shadow: 0 6px 16px rgba(0, 154, 68, 0.22);
+  }
+
+  .sec-footer {
+    max-width: 100%;
+    justify-content: center;
+  }
+}
+
+
