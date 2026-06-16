@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 export class EscuelaService {
 
   private apiUrl = 'http://127.0.0.1:8000/api/getescuelas';
-  private apiInstrumentos = 'http://localhost:8080/api/examen/nombres';
+  private apiInstrumentos = 'http://192.168.161.54:8080/api/examen/nombres';
 
   constructor(private http: HttpClient) {}
 
