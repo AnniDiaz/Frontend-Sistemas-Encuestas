@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 @Injectable({ providedIn: 'root' })
 export class EgresadoService {
 
-  private baseUrl = 'http://127.0.0.1:8000/api';
+  private baseUrl = 'http://192.168.50.108:8004/api';
 
   constructor(private http: HttpClient) {}
 

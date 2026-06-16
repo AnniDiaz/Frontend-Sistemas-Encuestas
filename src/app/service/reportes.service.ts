@@ -8,8 +8,8 @@ import { DashboardResponse } from '../shared/models/dashboard.model';
 })
 export class ReporteService {
 
-  private api = 'http://192.168.161.54:8080/api/examen';
-  private dashboardApi = 'http://192.168.161.54:8080/api/dashboard';
+  private api = 'http://192.168.50.108:8080//api/examen';
+  private dashboardApi = 'http://192.168.50.108:8080//api/dashboard';
 
   constructor(private http: HttpClient) {}
 

@@ -38,9 +38,9 @@ export class EncuestaStateService {
 
   private http = inject(HttpClient);
 
-  private apiUrl = 'http://192.168.161.54:8080/api/examen';
+  private apiUrl = 'http://192.168.50.108:8080//api/examen';
   private readonly respuestasUrl =
-    'http://192.168.161.54:8080/api/respuestas/examen';
+    'http://192.168.50.108:8080//api/respuestas/examen';
 
   // ==========================
   // ENCUESTAS
@@ -74,7 +74,7 @@ obtenerEncuestasRespondidas(
 ): Observable<number[]> {
 
   return this.http.get<number[]>(
-    `http://192.168.161.54:8080/api/respuestas/respondidas/${idUsuario}`
+    `http://192.168.50.108:8080//api/respuestas/respondidas/${idUsuario}`
   );
 }
   guardarRespuestasExamen(

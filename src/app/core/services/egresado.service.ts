@@ -10,7 +10,7 @@ export class EgresadoService {
 
   private http = inject(HttpClient);
 
-  private apiUrl = 'http://127.0.0.1:8000/api';
+  private apiUrl = 'http://192.168.50.108:8004/api';
 
   obtenerEgresado(dni: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/getegresado/${dni}`);
