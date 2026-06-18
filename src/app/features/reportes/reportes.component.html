@@ -25,6 +25,14 @@
         <i class="fas fa-file-pdf"></i>
         {{ generandoPDF ? 'GENERANDO...' : 'PDF' }}
       </button>
+      <button
+        class="btn-primary"
+        (click)="descargarDetalleRespuestas()"
+        [disabled]="encuestaId === 'ALL' || descargandoDetalle"
+        [title]="encuestaId === 'ALL' ? 'Selecciona una encuesta específica para exportar el detalle' : ''">
+        <i class="fas fa-table"></i>
+        {{ descargandoDetalle ? 'EXPORTANDO...' : 'DETALLE RESPUESTAS' }}
+      </button>
       <button class="btn-logout" (click)="logout()">
         <i class="fas fa-sign-out-alt"></i>
         CERRAR SESIÓN

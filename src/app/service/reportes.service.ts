@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { DashboardResponse } from '../shared/models/dashboard.model';
+import { ExportacionRespuestasResponse } from '../shared/models/respuestas-exportacion.model';
 import { API_MAIN_BASE } from '../shared/components/progress-bar/url';
 
 @Injectable({
@@ -11,6 +12,7 @@ export class ReporteService {
 
   private api = `${API_MAIN_BASE}/api/examen`;
   private dashboardApi = `${API_MAIN_BASE}/api/dashboard`;
+  private exportarRespuestasApi = `${API_MAIN_BASE}/api/respuestas/exportar`;
 
   constructor(private http: HttpClient) {}
 
@@ -49,5 +51,9 @@ export class ReporteService {
     }
 
     return this.http.get<DashboardResponse>(this.dashboardApi, { params });
+  }
+
+  exportarRespuestasPorEncuesta(idEncuesta: number): Observable<ExportacionRespuestasResponse> {
+    return this.http.get<ExportacionRespuestasResponse>(`${this.exportarRespuestasApi}/${idEncuesta}`);
   }
 }

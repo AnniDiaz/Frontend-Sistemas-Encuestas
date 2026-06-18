@@ -1,4 +1,4 @@
-  import { Component, OnInit } from '@angular/core';
+  import { Component, OnInit, HostListener } from '@angular/core';
   import { CommonModule } from '@angular/common';
   import { FormsModule } from '@angular/forms';
   import { EscuelaService } from '../../service/escuela.service';
@@ -10,6 +10,7 @@
     DistribucionSentimiento,
     RankingCalidadPregunta
   } from '../../shared/models/dashboard.model';
+  import { ExportacionRespuestasResponse } from '../../shared/models/respuestas-exportacion.model';
   import * as XLSX from 'xlsx-js-style';
   import jsPDF from 'jspdf';
   import html2canvas from 'html2canvas';
@@ -129,6 +130,7 @@
 
     cargando = false;
     generandoPDF = false;
+    descargandoDetalle = false;
 
     // Fecha actual dinámica
     fechaActual = new Date().toLocaleDateString('es-PE', {
@@ -141,10 +143,24 @@
       private router: Router
     ) {}
 
+    private resizeTimeout: any;
+
     ngOnInit(): void {
       this.cargarEscuelas();
       this.cargarEncuestas();
       this.cargarDashboard();
+    }
+
+    @HostListener('window:resize')
+    onWindowResize(): void {
+      clearTimeout(this.resizeTimeout);
+      this.resizeTimeout = setTimeout(() => {
+        if (!this.cargando) this.renderGraficos();
+      }, 250);
+    }
+
+    private esMobile(): boolean {
+      return window.innerWidth <= 640;
     }
 
     cargarEncuestas(): void {
@@ -240,11 +256,16 @@
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
           plugins: {
-            legend: { position: 'top' }
+            legend: {
+              position: this.esMobile() ? 'bottom' : 'top',
+              labels: { boxWidth: 12, font: { size: this.esMobile() ? 10 : 12 } }
+            }
           },
           scales: {
-            y: { beginAtZero: true }
+            y: { beginAtZero: true, ticks: { font: { size: this.esMobile() ? 10 : 12 } } },
+            x: { ticks: { font: { size: this.esMobile() ? 9 : 12 }, maxRotation: this.esMobile() ? 45 : 0 } }
           }
         }
       });
@@ -280,8 +301,12 @@
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
           plugins: {
-            legend: { position: 'right' },
+            legend: {
+              position: this.esMobile() ? 'bottom' : 'right',
+              labels: { boxWidth: 12, font: { size: this.esMobile() ? 10 : 12 } }
+            },
             tooltip: {
               callbacks: {
                 label: (ctx) => `${ctx.label}: ${ctx.parsed}%`
@@ -968,6 +993,179 @@ wsResumen,
         pdf.text(String(e.totalRespuestas), ml + colEsc + colProm + 3, y + 5);
         y += 7;
       });
+    }
+
+    descargarDetalleRespuestas(): void {
+      if (this.encuestaId === 'ALL') {
+        alert('Selecciona una encuesta específica para exportar el detalle de respuestas.');
+        return;
+      }
+      if (this.descargandoDetalle) return;
+
+      const idEncuesta = Number(this.encuestaId);
+      this.descargandoDetalle = true;
+
+      this.reporteService.exportarRespuestasPorEncuesta(idEncuesta).subscribe({
+        next: (data) => {
+          this.generarExcelDetalleRespuestas(data);
+          this.descargandoDetalle = false;
+        },
+        error: (err) => {
+          console.error('Error al exportar detalle de respuestas', err);
+          alert('No se pudo exportar el detalle de respuestas.');
+          this.descargandoDetalle = false;
+        }
+      });
+    }
+
+    private generarExcelDetalleRespuestas(data: ExportacionRespuestasResponse): void {
+      if (!data.filas.length) {
+        alert('La encuesta seleccionada no tiene respuestas registradas.');
+        return;
+      }
+
+      const workbook = XLSX.utils.book_new();
+      const fecha = new Date().toLocaleDateString('es-PE');
+
+      const xBorder = {
+        top:    { style: 'thin', color: { rgb: 'CBD5E1' } },
+        bottom: { style: 'thin', color: { rgb: 'CBD5E1' } },
+        left:   { style: 'thin', color: { rgb: 'CBD5E1' } },
+        right:  { style: 'thin', color: { rgb: 'CBD5E1' } }
+      };
+      const xTitle = (sz = 14) => ({
+        font: { bold: true, sz, color: { rgb: 'FFFFFF' } },
+        fill: { fgColor: { rgb: '16A34A' } },
+        alignment: { horizontal: 'center', vertical: 'center' },
+        border: xBorder
+      });
+      const xSub = {
+        font: { italic: true, sz: 9, color: { rgb: 'FFFFFF' } },
+        fill: { fgColor: { rgb: '0F172A' } },
+        alignment: { horizontal: 'center', vertical: 'center' },
+        border: xBorder
+      };
+      const xHead = {
+        font: { bold: true, sz: 9, color: { rgb: 'FFFFFF' } },
+        fill: { fgColor: { rgb: '1E293B' } },
+        alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+        border: xBorder
+      };
+      const xCell = (bg: string, fg = '0F172A', align: 'left' | 'center' = 'left', bold = false) => ({
+        font: { bold, sz: 9, color: { rgb: fg } },
+        fill: { fgColor: { rgb: bg } },
+        alignment: { horizontal: align, vertical: 'center' },
+        border: xBorder
+      });
+
+      // ── Hoja 1: Detalle de respuestas ──────────────────────────────
+      const preguntaCols = data.preguntas.map(p => `P${p.numero}`);
+      const headerRow = ['DNI', 'Nombre Completo', 'Facultad', 'Escuela Profesional', ...preguntaCols];
+      const totalCols = headerRow.length;
+
+      // Agrupa preguntas consecutivas por dimensión para la fila de cabecera agrupada
+      const dimPalette = ['16A34A', '2563EB', 'CA8A04', 'DC2626', '7C3AED', '0D9488'];
+      const dimGrupos: { codigo: string; nombre: string; inicio: number; fin: number; color: string }[] = [];
+      data.preguntas.forEach((p, i) => {
+        const ultimo = dimGrupos[dimGrupos.length - 1];
+        if (ultimo && ultimo.codigo === p.dimensionCodigo) {
+          ultimo.fin = i;
+        } else {
+          dimGrupos.push({
+            codigo: p.dimensionCodigo,
+            nombre: p.dimensionNombre,
+            inicio: i,
+            fin: i,
+            color: dimPalette[dimGrupos.length % dimPalette.length]
+          });
+        }
+      });
+
+      const dimensionRow = ['DATOS DEL EGRESADO', '', '', ''];
+      data.preguntas.forEach(() => dimensionRow.push(''));
+      dimGrupos.forEach(g => { dimensionRow[4 + g.inicio] = `${g.codigo} — ${g.nombre}`; });
+
+      const wsDetalle = XLSX.utils.aoa_to_sheet([
+        [data.nombreEncuesta],
+        [`Detalle de Respuestas por Egresado   •   Generado: ${fecha}`],
+        [],
+        dimensionRow,
+        headerRow,
+        ...data.filas.map(f => [f.dni, f.nombreCompleto, f.facultad, f.escuelaProfesional, ...f.respuestas])
+      ]);
+
+      wsDetalle['!cols'] = [
+        { wch: 14 }, { wch: 32 }, { wch: 26 }, { wch: 30 },
+        ...preguntaCols.map(() => ({ wch: 8 }))
+      ];
+      wsDetalle['!merges'] = [
+        { s: { r: 0, c: 0 }, e: { r: 0, c: totalCols - 1 } },
+        { s: { r: 1, c: 0 }, e: { r: 1, c: totalCols - 1 } },
+        { s: { r: 3, c: 0 }, e: { r: 3, c: 3 } },
+        ...dimGrupos.map(g => ({ s: { r: 3, c: 4 + g.inicio }, e: { r: 3, c: 4 + g.fin } }))
+      ];
+
+      const allCols = Array.from({ length: totalCols }, (_, i) => XLSX.utils.encode_col(i));
+      allCols.forEach(c => { if (wsDetalle[`${c}1`]) wsDetalle[`${c}1`].s = xTitle(14); });
+      allCols.forEach(c => { if (wsDetalle[`${c}2`]) wsDetalle[`${c}2`].s = xSub; });
+      if (wsDetalle['A4']) wsDetalle['A4'].s = xHead;
+      dimGrupos.forEach(g => {
+        for (let c = 4 + g.inicio; c <= 4 + g.fin; c++) {
+          const col = XLSX.utils.encode_col(c);
+          if (wsDetalle[`${col}4`]) {
+            wsDetalle[`${col}4`].s = {
+              font: { bold: true, sz: 8, color: { rgb: 'FFFFFF' } },
+              fill: { fgColor: { rgb: g.color } },
+              alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+              border: xBorder
+            };
+          }
+        }
+      });
+      allCols.forEach(c => { if (wsDetalle[`${c}5`]) wsDetalle[`${c}5`].s = xHead; });
+
+      data.filas.forEach((f, i) => {
+        const r = i + 6;
+        const bg = i % 2 === 0 ? 'FFFFFF' : 'F8FAFC';
+        if (wsDetalle[`A${r}`]) wsDetalle[`A${r}`].s = xCell(bg, '0F172A', 'center');
+        if (wsDetalle[`B${r}`]) wsDetalle[`B${r}`].s = xCell(bg, '0F172A', 'left', true);
+        if (wsDetalle[`C${r}`]) wsDetalle[`C${r}`].s = xCell(bg, '334155', 'left');
+        if (wsDetalle[`D${r}`]) wsDetalle[`D${r}`].s = xCell(bg, '334155', 'left');
+        preguntaCols.forEach((_, qi) => {
+          const col = XLSX.utils.encode_col(4 + qi);
+          if (wsDetalle[`${col}${r}`]) wsDetalle[`${col}${r}`].s = xCell(bg, '0F172A', 'center', true);
+        });
+      });
+
+      XLSX.utils.book_append_sheet(workbook, wsDetalle, 'Detalle Respuestas');
+
+      // ── Hoja 2: Leyenda de preguntas ─────────────────────────────────
+      const wsLeyenda = XLSX.utils.aoa_to_sheet([
+        ['LEYENDA DE PREGUNTAS'],
+        [`Encuesta: ${data.nombreEncuesta}`],
+        [],
+        ['Código', 'Dimensión', 'Pregunta'],
+        ...data.preguntas.map(p => [`P${p.numero}`, `${p.dimensionCodigo} — ${p.dimensionNombre}`, p.texto])
+      ]);
+      wsLeyenda['!cols'] = [{ wch: 10 }, { wch: 38 }, { wch: 70 }];
+      wsLeyenda['!merges'] = [
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 2 } },
+        { s: { r: 1, c: 0 }, e: { r: 1, c: 2 } }
+      ];
+      ['A1', 'B1', 'C1'].forEach(c => { if (wsLeyenda[c]) wsLeyenda[c].s = xTitle(14); });
+      ['A2', 'B2', 'C2'].forEach(c => { if (wsLeyenda[c]) wsLeyenda[c].s = xSub; });
+      ['A4', 'B4', 'C4'].forEach(c => { if (wsLeyenda[c]) wsLeyenda[c].s = xHead; });
+      data.preguntas.forEach((p, i) => {
+        const r = i + 5;
+        const bg = i % 2 === 0 ? 'FFFFFF' : 'F8FAFC';
+        if (wsLeyenda[`A${r}`]) wsLeyenda[`A${r}`].s = xCell(bg, '0F172A', 'center', true);
+        if (wsLeyenda[`B${r}`]) wsLeyenda[`B${r}`].s = xCell(bg, '334155', 'left', true);
+        if (wsLeyenda[`C${r}`]) wsLeyenda[`C${r}`].s = xCell(bg, '334155', 'left');
+      });
+      XLSX.utils.book_append_sheet(workbook, wsLeyenda, 'Leyenda Preguntas');
+
+      const nombreArchivo = data.nombreEncuesta.replace(/[^a-zA-Z0-9]+/g, '_').substring(0, 50);
+      XLSX.writeFile(workbook, `detalle_respuestas_${nombreArchivo}_${fecha.replace(/\//g, '-')}.xlsx`);
     }
 
     logout(): void {
