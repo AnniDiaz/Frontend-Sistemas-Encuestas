@@ -8,7 +8,7 @@ import { API_EGRESADO_BASE, API_MAIN_BASE } from '../shared/components/progress-
 })
 export class EscuelaService {
 
-  private apiUrl = `${API_EGRESADO_BASE}/api/getescuelas`;
+  private apiUrl = `https://modsigau.unsm.edu.pe/api/getescuelas`;
   private apiInstrumentos = `${API_MAIN_BASE}/api/examen/nombres`;
 
   constructor(private http: HttpClient) {}
