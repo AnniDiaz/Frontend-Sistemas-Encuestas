@@ -10,6 +10,7 @@ export class EscuelaService {
 
   private apiUrl = `https://modsigau.unsm.edu.pe/api/getescuelas`;
   private apiInstrumentos = `${API_MAIN_BASE}/api/examen/nombres`;
+  //cabo
 
   constructor(private http: HttpClient) {}
 
