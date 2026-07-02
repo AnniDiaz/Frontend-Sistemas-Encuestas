@@ -21,8 +21,8 @@ export class LoginAdminComponent {
   formSubmit() {
 
     if (
-      this.loginData.username === 'admin' &&
-      this.loginData.password === '123456'
+      this.loginData.username === 'UseilAdmin' &&
+      this.loginData.password === 'UseilAdmin#..'
     ) {
 
       localStorage.setItem('rolUsuario', 'admin');
