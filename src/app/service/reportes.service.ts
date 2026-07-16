@@ -53,7 +53,14 @@ export class ReporteService {
     return this.http.get<DashboardResponse>(this.dashboardApi, { params });
   }
 
-  exportarRespuestasPorEncuesta(idEncuesta: number): Observable<ExportacionRespuestasResponse> {
-    return this.http.get<ExportacionRespuestasResponse>(`${this.exportarRespuestasApi}/${idEncuesta}`);
+  exportarRespuestasPorEncuesta(idEncuesta: number, carrera?: string): Observable<ExportacionRespuestasResponse> {
+    let params = new HttpParams();
+    if (carrera && carrera.trim()) {
+      params = params.set('carrera', carrera.trim());
+    }
+    return this.http.get<ExportacionRespuestasResponse>(
+      `${this.exportarRespuestasApi}/${idEncuesta}`,
+      { params }
+    );
   }
 }

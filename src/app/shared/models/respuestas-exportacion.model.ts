@@ -12,6 +12,7 @@ export interface FilaExportacionRespuestas {
   nombreCompleto: string;
   facultad: string;
   escuelaProfesional: string;
+  fechaEgreso: string;
   respuestas: string[];
 }
 

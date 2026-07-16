@@ -26,10 +26,11 @@
         {{ generandoPDF ? 'GENERANDO...' : 'PDF' }}
       </button>
       <button
-        class="btn-primary"
+        class="btn-detalle"
+        [class.btn-detalle--activo]="encuestaId !== 'ALL'"
         (click)="descargarDetalleRespuestas()"
-        [disabled]="encuestaId === 'ALL' || descargandoDetalle"
-        [title]="encuestaId === 'ALL' ? 'Selecciona una encuesta específica para exportar el detalle' : ''">
+        [disabled]="descargandoDetalle"
+        title="Selecciona una encuesta específica para exportar el detalle de respuestas">
         <i class="fas fa-table"></i>
         {{ descargandoDetalle ? 'EXPORTANDO...' : 'DETALLE RESPUESTAS' }}
       </button>
