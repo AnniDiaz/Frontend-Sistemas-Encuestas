@@ -13,6 +13,7 @@ export interface FilaExportacionRespuestas {
   facultad: string;
   escuelaProfesional: string;
   fechaEgreso: string;
+  semestre_egreso?: string;
   respuestas: string[];
 }
 

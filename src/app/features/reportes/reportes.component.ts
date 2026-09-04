@@ -1079,8 +1079,8 @@ wsResumen,
 
       // ── Estructura de preguntas (reutilizable) ─────────────────────
       const preguntaCols = data.preguntas.map(p => `P${p.numero}`);
-      const totalCols = 5 + preguntaCols.length;
-      const headerRow = ['DNI', 'Nombre Completo', 'Facultad', 'Escuela Profesional', 'Fecha de Egreso', ...preguntaCols];
+      const totalCols = 6 + preguntaCols.length;
+      const headerRow = ['DNI', 'Nombre Completo', 'Facultad', 'Escuela Profesional', 'Fecha de Egreso', 'Semestre de Egreso', ...preguntaCols];
       const allCols = Array.from({ length: totalCols }, (_, i) => XLSX.utils.encode_col(i));
 
       const dimPalette = ['16A34A', '2563EB', 'CA8A04', 'DC2626', '7C3AED', '0D9488'];
@@ -1094,8 +1094,8 @@ wsResumen,
         }
       });
 
-      const dimensionRow = ['DATOS DEL EGRESADO', '', '', '', '', ...preguntaCols.map(() => '')];
-      dimGrupos.forEach(g => { dimensionRow[5 + g.inicio] = `${g.codigo} — ${g.nombre}`; });
+      const dimensionRow = ['DATOS DEL EGRESADO', '', '', '', '', '', ...preguntaCols.map(() => '')];
+      dimGrupos.forEach(g => { dimensionRow[6 + g.inicio] = `${g.codigo} — ${g.nombre}`; });
 
       // ── Helper: construye hoja de datos para un subconjunto de filas ─
       const buildHoja = (filasHoja: typeof filas, subtitulo: string) => {
@@ -1105,20 +1105,20 @@ wsResumen,
           [],
           dimensionRow,
           headerRow,
-          ...filasHoja.map(f => [f.dni, f.nombreCompleto, f.facultad, f.escuelaProfesional, f.fechaEgreso || '', ...f.respuestas])
+          ...filasHoja.map(f => [f.dni, f.nombreCompleto, f.facultad, f.escuelaProfesional, f.fechaEgreso || '', f.semestre_egreso || '', ...f.respuestas])
         ]);
-        ws['!cols'] = [{ wch: 14 }, { wch: 32 }, { wch: 26 }, { wch: 30 }, { wch: 16 }, ...preguntaCols.map(() => ({ wch: 8 }))];
+        ws['!cols'] = [{ wch: 14 }, { wch: 32 }, { wch: 26 }, { wch: 30 }, { wch: 16 }, { wch: 18 }, ...preguntaCols.map(() => ({ wch: 8 }))];
         ws['!merges'] = [
           { s: { r: 0, c: 0 }, e: { r: 0, c: totalCols - 1 } },
           { s: { r: 1, c: 0 }, e: { r: 1, c: totalCols - 1 } },
-          { s: { r: 3, c: 0 }, e: { r: 3, c: 4 } },
-          ...dimGrupos.map(g => ({ s: { r: 3, c: 5 + g.inicio }, e: { r: 3, c: 5 + g.fin } }))
+          { s: { r: 3, c: 0 }, e: { r: 3, c: 5 } },
+          ...dimGrupos.map(g => ({ s: { r: 3, c: 6 + g.inicio }, e: { r: 3, c: 6 + g.fin } }))
         ];
         allCols.forEach(c => { if (ws[`${c}1`]) ws[`${c}1`].s = xTitle(14); });
         allCols.forEach(c => { if (ws[`${c}2`]) ws[`${c}2`].s = xSub; });
         if (ws['A4']) ws['A4'].s = xHead;
         dimGrupos.forEach(g => {
-          for (let c = 5 + g.inicio; c <= 5 + g.fin; c++) {
+          for (let c = 6 + g.inicio; c <= 6 + g.fin; c++) {
             const col = XLSX.utils.encode_col(c);
             if (ws[`${col}4`]) ws[`${col}4`].s = { font: { bold: true, sz: 8, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: g.color } }, alignment: { horizontal: 'center', vertical: 'center', wrapText: true }, border: xBorder };
           }
@@ -1132,8 +1132,9 @@ wsResumen,
           if (ws[`C${r}`]) ws[`C${r}`].s = xCell(bg, '334155', 'left');
           if (ws[`D${r}`]) ws[`D${r}`].s = xCell(bg, '334155', 'left');
           if (ws[`E${r}`]) ws[`E${r}`].s = xCell(bg, '334155', 'center');
+          if (ws[`F${r}`]) ws[`F${r}`].s = xCell(bg, '334155', 'center');
           preguntaCols.forEach((_, qi) => {
-            const col = XLSX.utils.encode_col(5 + qi);
+            const col = XLSX.utils.encode_col(6 + qi);
             if (ws[`${col}${r}`]) ws[`${col}${r}`].s = xCell(bg, '0F172A', 'center', true);
           });
         });
