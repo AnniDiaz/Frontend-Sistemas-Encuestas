@@ -1272,3 +1272,5 @@ wsResumen,
       this.router.navigate(['/auth/selector-rol']);
     }
   }
+
+  //comentario
