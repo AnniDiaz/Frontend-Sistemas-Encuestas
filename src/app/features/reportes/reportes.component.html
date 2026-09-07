@@ -59,8 +59,8 @@
 
     <div class="filter-group">
       <label>FILTRAR POR FACULTAD / CARRERA</label>
-      <select [(ngModel)]="carrera" (change)="onCarreraChange($event)">
-        <option value="">Todas las escuelas</option>
+      <select [(ngModel)]="carrera" (change)="onCarreraChange($event)" [disabled]="esEncuestaEmpleador()">
+        <option value="">{{ esEncuestaEmpleador() ? 'No aplica para empleadores' : 'Todas las escuelas' }}</option>
         <option *ngFor="let escuela of escuelas" [value]="escuela.Name">
           {{ escuela.Name }}
         </option>

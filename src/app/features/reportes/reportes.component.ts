@@ -206,7 +206,16 @@
       });
     }
 
+    esEncuestaEmpleador(): boolean {
+      if (this.encuestaId === 'ALL') return false;
+      const enc = this.encuestas.find(e => String(e.idEncuesta) === String(this.encuestaId));
+      return enc?.cargo?.toLowerCase() === 'empleador' || enc?.nombre?.toLowerCase().includes('empleador');
+    }
+
     onEncuestaChange(): void {
+      if (this.esEncuestaEmpleador()) {
+        this.carrera = '';
+      }
       this.cargarDashboard();
     }
 
@@ -1006,7 +1015,8 @@ wsResumen,
       if (this.descargandoDetalle) return;
 
       const idEncuesta = Number(this.encuestaId);
-      const carreraFiltro = this.carrera?.trim() || '';
+      const esEmpleador = this.esEncuestaEmpleador();
+      const carreraFiltro = esEmpleador ? '' : (this.carrera?.trim() || '');
       this.descargandoDetalle = true;
 
       this.reporteService.exportarRespuestasPorEncuesta(idEncuesta, carreraFiltro || undefined).subscribe({
@@ -1023,7 +1033,9 @@ wsResumen,
     }
 
     private generarExcelDetalleRespuestas(data: ExportacionRespuestasResponse, carreraFiltro = ''): void {
-      const filas = carreraFiltro
+      const esEmpleador = this.esEncuestaEmpleador() || data.nombreEncuesta?.toLowerCase().includes('empleador');
+
+      const filas = (!esEmpleador && carreraFiltro)
         ? data.filas.filter(f =>
             f.escuelaProfesional?.trim().toLowerCase() === carreraFiltro.trim().toLowerCase() ||
             f.facultad?.trim().toLowerCase() === carreraFiltro.trim().toLowerCase()
@@ -1079,9 +1091,6 @@ wsResumen,
 
       // ── Estructura de preguntas (reutilizable) ─────────────────────
       const preguntaCols = data.preguntas.map(p => `P${p.numero}`);
-      const totalCols = 6 + preguntaCols.length;
-      const headerRow = ['DNI', 'Nombre Completo', 'Facultad', 'Escuela Profesional', 'Fecha de Egreso', 'Semestre de Egreso', ...preguntaCols];
-      const allCols = Array.from({ length: totalCols }, (_, i) => XLSX.utils.encode_col(i));
 
       const dimPalette = ['16A34A', '2563EB', 'CA8A04', 'DC2626', '7C3AED', '0D9488'];
       const dimGrupos: { codigo: string; nombre: string; inicio: number; fin: number; color: string }[] = [];
@@ -1094,31 +1103,58 @@ wsResumen,
         }
       });
 
-      const dimensionRow = ['DATOS DEL EGRESADO', '', '', '', '', '', ...preguntaCols.map(() => '')];
-      dimGrupos.forEach(g => { dimensionRow[6 + g.inicio] = `${g.codigo} — ${g.nombre}`; });
+      //Metadatos según si es encuesta a empleador o egresado
+      let metaHeaders: string[];
+      let dimensionRow: string[];
+      let metaCount: number;
+      let metaColWidths: { wch: number }[];
+      let buildRowFn: (f: any) => any[];
+
+      if (esEmpleador) {
+        metaHeaders = ['RUC', 'Razón Social / Empresa'];
+        dimensionRow = ['DATOS DEL EMPLEADOR / EMPRESA', '', ...preguntaCols.map(() => '')];
+        metaCount = 2;
+        metaColWidths = [{ wch: 18 }, { wch: 42 }];
+        buildRowFn = (f) => [f.dni || '', f.nombreCompleto || '', ...f.respuestas];
+      } else {
+        metaHeaders = ['DNI', 'Nombre Completo', 'Facultad', 'Escuela Profesional', 'Fecha de Egreso', 'Semestre de Egreso'];
+        dimensionRow = ['DATOS DEL EGRESADO', '', '', '', '', '', ...preguntaCols.map(() => '')];
+        metaCount = 6;
+        metaColWidths = [{ wch: 14 }, { wch: 32 }, { wch: 26 }, { wch: 30 }, { wch: 16 }, { wch: 18 }];
+        buildRowFn = (f) => [f.dni || '', f.nombreCompleto || '', f.facultad || '', f.escuelaProfesional || '', f.fechaEgreso || '', f.semestre_egreso || '', ...f.respuestas];
+      }
+
+      const totalCols = metaCount + preguntaCols.length;
+      const headerRow = [...metaHeaders, ...preguntaCols];
+      const allCols = Array.from({ length: totalCols }, (_, i) => XLSX.utils.encode_col(i));
+      dimGrupos.forEach(g => { dimensionRow[metaCount + g.inicio] = `${g.codigo} — ${g.nombre}`; });
 
       // ── Helper: construye hoja de datos para un subconjunto de filas ─
       const buildHoja = (filasHoja: typeof filas, subtitulo: string) => {
+        const totalLabel = esEmpleador
+          ? `${filasHoja.length} empleador(es)`
+          : `${filasHoja.length} egresado(s)`;
+
         const ws = XLSX.utils.aoa_to_sheet([
           [data.nombreEncuesta],
-          [`${subtitulo}   •   Generado: ${fecha}   •   Total: ${filasHoja.length} egresado(s)`],
+          [`${subtitulo}   •   Generado: ${fecha}   •   Total: ${totalLabel}`],
           [],
           dimensionRow,
           headerRow,
-          ...filasHoja.map(f => [f.dni, f.nombreCompleto, f.facultad, f.escuelaProfesional, f.fechaEgreso || '', f.semestre_egreso || '', ...f.respuestas])
+          ...filasHoja.map(buildRowFn)
         ]);
-        ws['!cols'] = [{ wch: 14 }, { wch: 32 }, { wch: 26 }, { wch: 30 }, { wch: 16 }, { wch: 18 }, ...preguntaCols.map(() => ({ wch: 8 }))];
+        ws['!cols'] = [...metaColWidths, ...preguntaCols.map(() => ({ wch: 8 }))];
         ws['!merges'] = [
           { s: { r: 0, c: 0 }, e: { r: 0, c: totalCols - 1 } },
           { s: { r: 1, c: 0 }, e: { r: 1, c: totalCols - 1 } },
-          { s: { r: 3, c: 0 }, e: { r: 3, c: 5 } },
-          ...dimGrupos.map(g => ({ s: { r: 3, c: 6 + g.inicio }, e: { r: 3, c: 6 + g.fin } }))
+          { s: { r: 3, c: 0 }, e: { r: 3, c: metaCount - 1 } },
+          ...dimGrupos.map(g => ({ s: { r: 3, c: metaCount + g.inicio }, e: { r: 3, c: metaCount + g.fin } }))
         ];
         allCols.forEach(c => { if (ws[`${c}1`]) ws[`${c}1`].s = xTitle(14); });
         allCols.forEach(c => { if (ws[`${c}2`]) ws[`${c}2`].s = xSub; });
         if (ws['A4']) ws['A4'].s = xHead;
         dimGrupos.forEach(g => {
-          for (let c = 6 + g.inicio; c <= 6 + g.fin; c++) {
+          for (let c = metaCount + g.inicio; c <= metaCount + g.fin; c++) {
             const col = XLSX.utils.encode_col(c);
             if (ws[`${col}4`]) ws[`${col}4`].s = { font: { bold: true, sz: 8, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: g.color } }, alignment: { horizontal: 'center', vertical: 'center', wrapText: true }, border: xBorder };
           }
@@ -1127,31 +1163,33 @@ wsResumen,
         filasHoja.forEach((_f, i) => {
           const r = i + 6;
           const bg = i % 2 === 0 ? 'FFFFFF' : 'F8FAFC';
-          if (ws[`A${r}`]) ws[`A${r}`].s = xCell(bg, '0F172A', 'center');
-          if (ws[`B${r}`]) ws[`B${r}`].s = xCell(bg, '0F172A', 'left', true);
-          if (ws[`C${r}`]) ws[`C${r}`].s = xCell(bg, '334155', 'left');
-          if (ws[`D${r}`]) ws[`D${r}`].s = xCell(bg, '334155', 'left');
-          if (ws[`E${r}`]) ws[`E${r}`].s = xCell(bg, '334155', 'center');
-          if (ws[`F${r}`]) ws[`F${r}`].s = xCell(bg, '334155', 'center');
+          for (let c = 0; c < metaCount; c++) {
+            const col = XLSX.utils.encode_col(c);
+            if (ws[`${col}${r}`]) ws[`${col}${r}`].s = xCell(bg, '0F172A', c === 1 ? 'left' : 'center', c === 1);
+          }
           preguntaCols.forEach((_, qi) => {
-            const col = XLSX.utils.encode_col(6 + qi);
+            const col = XLSX.utils.encode_col(metaCount + qi);
             if (ws[`${col}${r}`]) ws[`${col}${r}`].s = xCell(bg, '0F172A', 'center', true);
           });
         });
         return ws;
       };
 
-      // ── Modo: escuela específica → una sola hoja ───────────────────
-      if (carreraFiltro) {
+      if (esEmpleador) {
+        // ── Modo Empleador: hoja única con todos los empleadores ──────
+        XLSX.utils.book_append_sheet(workbook, buildHoja(filas, 'Reporte de Empleadores'), 'Detalle Empleadores');
+
+      } else if (carreraFiltro) {
+        // ── Modo: escuela específica → una sola hoja ───────────────────
         XLSX.utils.book_append_sheet(workbook, buildHoja(filas, `Escuela: ${carreraFiltro}`), 'Detalle Respuestas');
 
       } else {
         // ── Modo: general → resumen + una hoja por escuela ─────────────
-        const escuelasUnicas = [...new Set(filas.map(f => f.escuelaProfesional))].sort();
+        const escuelasUnicas = [...new Set(filas.map(f => f.escuelaProfesional || 'Sin Escuela'))].sort();
 
         // Hoja resumen
         const resumenRows = escuelasUnicas.map(esc => {
-          const grupo = filas.filter(f => f.escuelaProfesional === esc);
+          const grupo = filas.filter(f => (f.escuelaProfesional || 'Sin Escuela') === esc);
           const facultad = grupo[0]?.facultad || '';
           const allResp = grupo.flatMap(f => f.respuestas.map(v => Number(v)).filter(n => !isNaN(n)));
           const prom = allResp.length ? parseFloat((allResp.reduce((a, b) => a + b, 0) / allResp.length).toFixed(2)) : 0;
@@ -1188,8 +1226,8 @@ wsResumen,
         // Una hoja por escuela
         const usedNames = new Set<string>();
         escuelasUnicas.forEach(esc => {
-          const filasEsc = filas.filter(f => f.escuelaProfesional === esc);
-          let nombre = esc.replace(/[/\\?*[\]:]/g, ' ').trim().substring(0, 31);
+          const filasEsc = filas.filter(f => (f.escuelaProfesional || 'Sin Escuela') === esc);
+          let nombre = (esc || 'General').replace(/[/\\?*[\]:]/g, ' ').trim().substring(0, 31);
           if (usedNames.has(nombre)) nombre = nombre.substring(0, 28) + '_' + (usedNames.size % 100);
           usedNames.add(nombre);
           XLSX.utils.book_append_sheet(workbook, buildHoja(filasEsc, `Escuela: ${esc}`), nombre);
@@ -1223,9 +1261,9 @@ wsResumen,
 
       // ── Nombre del archivo ─────────────────────────────────────────
       const nombreBase = data.nombreEncuesta.replace(/[^a-zA-Z0-9]+/g, '_').substring(0, 40);
-      const sufijo = carreraFiltro
-        ? carreraFiltro.replace(/[^a-zA-Z0-9]+/g, '_').substring(0, 20)
-        : 'GENERAL';
+      const sufijo = esEmpleador
+        ? 'EMPLEADORES'
+        : (carreraFiltro ? carreraFiltro.replace(/[^a-zA-Z0-9]+/g, '_').substring(0, 20) : 'GENERAL');
       XLSX.writeFile(workbook, `detalle_${nombreBase}_${sufijo}_${fecha.replace(/\//g, '-')}.xlsx`);
     }
 
