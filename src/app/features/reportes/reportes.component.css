@@ -1,7 +1,7 @@
 .dashboard-container {
   background: #f6f8fb;
-  min-height: 100vh;
-  padding: 2vw 5vw;
+  min-height: 0;
+  padding: 0;
   font-family: "Inter", sans-serif;
   color: #0f172a;
 }
@@ -110,23 +110,6 @@
   opacity: 0.9;
 }
 
-.btn-logout {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border: 1px solid #d9e0e7;
-  background: white;
-  padding: 8px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  color: #64748b;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.btn-logout:hover {
-  background: #f8fafc;
-}
 
 .btn-pdf {
   border-radius: 12px;
@@ -218,18 +201,18 @@
   margin-top: 18px;
   padding: 18px;
   display: grid;
-  grid-template-columns: 60px 1fr 1fr 160px;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) 160px;
   gap: 16px;
   align-items: center;
 }
 
-.filter-icon {
-  text-align: center;
-  color: #94a3b8;
-  font-size: 20px;
+.filters-card .btn-filter {
+  align-self: end;
+  width: 160px;
 }
 
 .filter-group {
+  min-width: 0;
   display: flex;
   flex-direction: column;
 }
@@ -246,6 +229,11 @@
 }
 
 .filter-group select {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  text-overflow: ellipsis;
   height: 42px;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
@@ -558,11 +546,16 @@
   font-size: 13px;
 }
 
-/* =========================
-   RESPONSIVE
-========================= */
-
 @media (max-width: 1024px) {
+  .filters-card {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) 120px;
+  }
+
+  .filters-card .btn-filter {
+    width: 100%;
+  }
+
+
   .kpi-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -573,10 +566,6 @@
 }
 
 @media (max-width: 768px) {
-  .dashboard-container {
-    padding: 10px 12px;
-  }
-
   .header-card {
     flex-direction: column;
     align-items: flex-start;
@@ -591,7 +580,7 @@
 
   .btn-primary,
   .btn-pdf,
-  .btn-logout {
+  .btn-detalle {
     flex: 1;
     min-width: 0;
     justify-content: center;
@@ -612,14 +601,19 @@
   }
 
   .filters-card {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    padding: 14px;
+    gap: 14px;
   }
 
-  .filter-group select{
-    width: 100%;
+  .filter-group select {
+    height: 44px;
+    font-size: 16px;
   }
-  .filter-icon {
-    display: none;
+
+  .filters-card .btn-filter {
+    min-height: 44px;
+    width: 100%;
   }
 
   .header-actions {
@@ -628,7 +622,7 @@
 
   .btn-primary,
   .btn-pdf,
-  .btn-logout {
+  .btn-detalle {
     width: 100%;
   }
 

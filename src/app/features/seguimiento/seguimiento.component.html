@@ -1,0 +1,141 @@
+<app-encabezado-seguimiento />
+  <section class="seguimiento-section">
+    <div class="seguimiento-filtros">
+      <div class="filter-group seguimiento-busqueda">
+        <label>BUSCAR REGISTRADO</label>
+        <div class="busqueda-control">
+          <input [(ngModel)]="seguimientoBusqueda" (keyup.enter)="aplicarFiltrosSeguimiento()"
+                 placeholder="DNI, RUC o nombre">
+          <button type="button" (click)="aplicarFiltrosSeguimiento()" aria-label="Buscar por DNI, RUC o nombre">
+            <i class="fas fa-magnifying-glass"></i>
+          </button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <label>PÚBLICO</label>
+        <select [(ngModel)]="seguimientoPublico" (ngModelChange)="onPublicoSeguimientoChange()">
+          <option value="">Todos</option>
+          <option value="EGRESADO">Egresados (DNI)</option>
+          <option value="EMPLEADOR">Empleadores (RUC)</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>ENCUESTA</label>
+        <select [disabled]="cargandoEncuestas || !!errorEncuestas" [(ngModel)]="seguimientoEncuestaId" (ngModelChange)="onEncuestaSeguimientoChange()">
+          <option value="ALL">Todas</option>
+          <option *ngFor="let e of encuestasSeguimiento" [value]="e.idEncuesta">{{ e.nombre }}</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>ESCUELA PROFESIONAL</label>
+        <select [(ngModel)]="carrera" (ngModelChange)="aplicarFiltrosSeguimiento()"
+                [disabled]="cargandoEscuelas || !!errorEscuelas || seguimientoPublico === 'EMPLEADOR' || esEncuestaSeguimientoEmpleador()">
+          <option value="">Todas</option>
+          <option *ngFor="let escuela of escuelas" [value]="escuela.Name">{{ escuela.Name }}</option>
+        </select>
+      </div>
+      <button class="btn-filter" type="button" (click)="aplicarFiltrosSeguimiento()">
+        APLICAR <i class="fas fa-search"></i>
+      </button>
+    </div>
+
+    <div *ngIf="errorEscuelas || errorEncuestas" class="seguimiento-error" role="alert">
+      <div>
+        <p *ngIf="errorEscuelas">{{ errorEscuelas }}</p>
+        <p *ngIf="errorEncuestas">{{ errorEncuestas }}</p>
+      </div>
+      <button type="button" (click)="reintentarCatalogos()">Reintentar filtros</button>
+    </div>
+
+    <div *ngIf="cargandoSeguimiento" class="loading-overlay seguimiento-loading">
+      <div class="spinner"></div>
+      <span>Cargando registrados...</span>
+    </div>
+
+    <div *ngIf="errorSeguimiento && !cargandoSeguimiento" class="seguimiento-error">
+      <i class="fas fa-circle-exclamation"></i>
+      <span>{{ errorSeguimiento }}</span>
+      <button type="button" (click)="cargarSeguimiento()">Reintentar</button>
+    </div>
+
+    <ng-container *ngIf="!cargandoSeguimiento && !errorSeguimiento">
+      <div class="seguimiento-kpis">
+        <article><i class="fas fa-users"></i><div><span>Registrados</span><strong>{{ resumenSeguimiento.registrados }}</strong></div></article>
+        <article><i class="fas fa-user-graduate icon-blue"></i><div><span>Egresados</span><strong>{{ resumenSeguimiento.egresados }}</strong></div></article>
+        <article><i class="fas fa-building icon-yellow"></i><div><span>Empleadores</span><strong>{{ resumenSeguimiento.empleadores }}</strong></div></article>
+        <article><i class="fas fa-clock icon-red"></i><div><span>Encuestas pendientes</span><strong>{{ resumenSeguimiento.encuestasPendientes }}</strong></div></article>
+        <article class="porcentaje-card">
+          <i class="fas fa-percentage"></i><div><span>Cumplimiento general</span>
+          <strong>{{ resumenSeguimiento.porcentaje == null ? 'No aplica' : ((resumenSeguimiento.porcentaje | number:'1.0-2') + '%') }}</strong></div>
+        </article>
+      </div>
+
+      <div class="seguimiento-tabla-card">
+        <div class="seguimiento-table-header">
+          <div>
+            <h2>Seguimiento de encuestas</h2>
+            <p>{{ seguimientoTotalElementos }} registro(s) encontrados</p>
+          </div>
+          <span>Página {{ seguimientoTotalPaginas ? seguimientoPagina + 1 : 0 }} de {{ seguimientoTotalPaginas }}</span>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="seguimiento-table">
+            <thead><tr>
+              <th>Registrado</th><th>Tipo</th><th>Escuela</th><th>Encuestas</th>
+              <th>Avance</th><th aria-label="Ver detalle"></th>
+            </tr></thead>
+            <tbody>
+              <ng-container *ngFor="let persona of seguimiento">
+                <tr>
+                  <td><strong>{{ persona.nombre || 'Sin nombre' }}</strong><small>{{ persona.documento }}</small></td>
+                  <td>{{ persona.publico === 'SIN_CLASIFICAR' ? 'Sin clasificar' : (persona.publico | titlecase) }}</td>
+                  <td>{{ persona.escuelaProfesional || '—' }}</td>
+                  <td>{{ persona.respondidas }} / {{ persona.aplicables }}</td>
+                  <td>
+                    <div class="avance-cell">
+                      <div><span [ngClass]="claseAvance(persona.porcentaje)" [style.width.%]="persona.porcentaje || 0"></span></div>
+                      <b>{{ persona.porcentaje == null ? 'N/A' : ((persona.porcentaje | number:'1.0-2') + '%') }}</b>
+                    </div>
+                  </td>
+                  <td class="detalle-cell">
+                    <button class="detalle-toggle" type="button" (click)="alternarDetalle(persona)"
+                            [attr.aria-expanded]="personaExpandida === persona.idUsuario"
+                            [attr.aria-label]="'Ver encuestas de ' + (persona.nombre || persona.documento)">
+                      <i *ngIf="!detallesCargando.has(persona.idUsuario)" class="fas"
+                         [ngClass]="personaExpandida === persona.idUsuario ? 'fa-eye-slash' : 'fa-eye'"></i>
+                      <i *ngIf="detallesCargando.has(persona.idUsuario)" class="fas fa-spinner fa-spin"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr *ngIf="personaExpandida === persona.idUsuario" class="detalle-row">
+                  <td colspan="6">
+                    <div *ngIf="detallesCargando.has(persona.idUsuario)" class="detalle-mensaje">
+                      <i class="fas fa-spinner fa-spin"></i> Cargando encuestas...
+                    </div>
+                    <div *ngIf="detallesError.has(persona.idUsuario)" class="detalle-mensaje detalle-error">
+                      No se pudo cargar el detalle.
+                      <button type="button" (click)="recargarDetalle(persona)">Reintentar</button>
+                    </div>
+                    <div *ngIf="detallesSeguimiento[persona.idUsuario] as detalle" class="encuestas-detalle">
+                      <div *ngFor="let encuesta of detalle.encuestas" [class.respondida]="encuesta.respondida">
+                        <i class="fas" [ngClass]="encuesta.respondida ? 'fa-circle-check' : 'fa-clock'"></i>
+                        <span><strong>{{ encuesta.nombre }}</strong><small>{{ encuesta.respondida ? 'Respondida' : 'Pendiente' }}</small></span>
+                      </div>
+                      <p *ngIf="!detalle.encuestas.length">No tiene encuestas aplicables.</p>
+                    </div>
+                  </td>
+                </tr>
+              </ng-container>
+              <tr *ngIf="!seguimiento.length"><td colspan="6" class="empty-row">No hay registros con estos filtros.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="seguimiento-paginacion" *ngIf="seguimientoTotalPaginas > 1">
+          <button type="button" (click)="cambiarPaginaSeguimiento(seguimientoPagina - 1)" [disabled]="seguimientoPagina === 0"><i class="fas fa-chevron-left"></i> Anterior</button>
+          <button type="button" (click)="cambiarPaginaSeguimiento(seguimientoPagina + 1)" [disabled]="seguimientoPagina + 1 >= seguimientoTotalPaginas">Siguiente <i class="fas fa-chevron-right"></i></button>
+        </div>
+      </div>
+    </ng-container>
+  </section>

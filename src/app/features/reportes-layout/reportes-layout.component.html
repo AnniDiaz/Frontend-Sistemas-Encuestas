@@ -1,0 +1,16 @@
+<div class="reports-layout">
+  <div class="navigation-bar">
+    <nav aria-label="Secciones de reportes">
+      <a routerLink="/reportes/analitica" routerLinkActive="active" ariaCurrentWhenActive="page">
+        <i class="fas fa-chart-line" aria-hidden="true"></i> Analítica
+      </a>
+      <a routerLink="/reportes/seguimiento" routerLinkActive="active" ariaCurrentWhenActive="page">
+        <i class="fas fa-user-check" aria-hidden="true"></i> Seguimiento de registros
+      </a>
+    </nav>
+    <button class="logout" type="button" (click)="logout()">
+      <i class="fas fa-sign-out-alt" aria-hidden="true"></i> Cerrar sesión
+    </button>
+  </div>
+  <main><router-outlet /></main>
+</div>
