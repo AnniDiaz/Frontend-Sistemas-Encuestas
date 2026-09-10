@@ -1,4 +1,5 @@
-  import { Component, OnInit, HostListener } from '@angular/core';
+  import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+  import { Subject, takeUntil } from 'rxjs';
   import { CommonModule } from '@angular/common';
   import { FormsModule } from '@angular/forms';
   import { EscuelaService } from '../../service/escuela.service';
@@ -29,7 +30,7 @@
     Tooltip,
     Legend
   } from 'chart.js';
-  import { Router } from '@angular/router';
+
   import Swal from 'sweetalert2';
   const COLORS = {
     primary: '16A34A',
@@ -105,7 +106,7 @@
     styleUrls: ['./reportes.component.css']
   })
 
-  export class ReportesComponent implements OnInit {
+  export class ReportesComponent implements OnInit, OnDestroy {
 
     // Filtros
     encuestaId: any = 'ALL';
@@ -142,9 +143,20 @@
     constructor(
       private escuelaService: EscuelaService,
       private reporteService: ReporteService,
-      private encuestaStateService: EncuestaStateService,
-      private router: Router
+      private encuestaStateService: EncuestaStateService
     ) {}
+
+    private readonly destruido = new Subject<void>();
+    private renderTimeout?: ReturnType<typeof setTimeout>;
+
+    ngOnDestroy(): void {
+      this.destruido.next();
+      this.destruido.complete();
+      clearTimeout(this.renderTimeout);
+      clearTimeout(this.resizeTimeout);
+      this.comparativoChart?.destroy();
+      this.sentimientoChart?.destroy();
+    }
 
     private resizeTimeout: any;
 
@@ -167,7 +179,7 @@
     }
 
     cargarEncuestas(): void {
-      this.encuestaStateService.obtenerEncuestas().subscribe({
+      this.encuestaStateService.obtenerEncuestas().pipe(takeUntil(this.destruido)).subscribe({
         next: (data: any) => {
           this.encuestas = data;
         },
@@ -177,7 +189,7 @@
 
 
     cargarEscuelas(): void {
-      this.escuelaService.obtenerEscuelas().subscribe({
+      this.escuelaService.obtenerEscuelas().pipe(takeUntil(this.destruido)).subscribe({
         next: (response: any) => {
           this.escuelas = response.data || [];
         }
@@ -190,14 +202,15 @@
       const idEncuesta = this.encuestaId !== 'ALL' ? Number(this.encuestaId) : undefined;
       const facultad = this.carrera?.trim() || undefined;
 
-      this.reporteService.obtenerDashboard(idEncuesta, facultad).subscribe({
+      this.reporteService.obtenerDashboard(idEncuesta, facultad).pipe(takeUntil(this.destruido)).subscribe({
         next: (data: DashboardResponse) => {
           this.kpis = data.kpis;
           this.comparativoPorEscuela = data.comparativoPorEscuela || [];
           this.distribucionSentimiento = data.distribucionSentimiento || [];
           this.rankingCalidadPreguntas = data.rankingCalidadPreguntas || [];
           this.cargando = false;
-          setTimeout(() => this.renderGraficos(), 300);
+          clearTimeout(this.renderTimeout);
+          this.renderTimeout = setTimeout(() => this.renderGraficos(), 300);
         },
         error: (err: any) => {
           console.error('Error al cargar dashboard', err);
@@ -1019,7 +1032,7 @@ wsResumen,
       const carreraFiltro = esEmpleador ? '' : (this.carrera?.trim() || '');
       this.descargandoDetalle = true;
 
-      this.reporteService.exportarRespuestasPorEncuesta(idEncuesta, carreraFiltro || undefined).subscribe({
+      this.reporteService.exportarRespuestasPorEncuesta(idEncuesta, carreraFiltro || undefined).pipe(takeUntil(this.destruido)).subscribe({
         next: (data) => {
           this.generarExcelDetalleRespuestas(data, carreraFiltro);
           this.descargandoDetalle = false;
@@ -1267,10 +1280,7 @@ wsResumen,
       XLSX.writeFile(workbook, `detalle_${nombreBase}_${sufijo}_${fecha.replace(/\//g, '-')}.xlsx`);
     }
 
-    logout(): void {
-      localStorage.clear();
-      this.router.navigate(['/auth/selector-rol']);
-    }
+
   }
 
   //comentario
