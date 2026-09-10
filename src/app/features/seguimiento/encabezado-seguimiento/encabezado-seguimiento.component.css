@@ -1,0 +1,33 @@
+:host { display: block; }
+
+.header-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 22px 28px;
+  color: #0f172a;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, .04);
+}
+
+.icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 52px;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+}
+
+.icon-box img { display: block; width: 52px; height: auto; }
+.header-text { min-width: 0; }
+h1 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -.5px; overflow-wrap: anywhere; }
+p { margin: 4px 0 0; color: #94a3b8; font-size: 13px; line-height: 1.5; }
+
+@media (max-width: 768px) {
+  .header-card { padding: 16px; }
+  h1 { font-size: 20px; }
+}
