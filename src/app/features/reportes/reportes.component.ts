@@ -268,6 +268,7 @@
       this.egresadoDni = null;
       this.encuestasDni = [];
       this.encuestasRespondidasDni = 0;
+      this.progresoDni = 0;
 
       if (dni.length === 11) {
         this.cargarInformacionRuc(dni);
@@ -276,12 +277,13 @@
 
       this.egresadoService.buscarPorDni(dni).subscribe({
         next: (respuesta: any) => {
-          const datos = Array.isArray(respuesta?.data)
-            ? respuesta.data[0]
-            : respuesta?.data || respuesta;
+          const resultado = respuesta && Object.prototype.hasOwnProperty.call(respuesta, 'data')
+            ? respuesta.data
+            : respuesta;
+          const datos = Array.isArray(resultado) ? resultado[0] : resultado;
 
-          if (!datos) {
-            this.errorDniRuc = 'Egresado no registrado.';
+          if (!datos || !(datos.Name || datos.name || datos.nombres)) {
+            this.errorDniRuc = 'El DNI ingresado no corresponde a un egresado.';
             this.cargandoDni = false;
             return;
           }
@@ -298,18 +300,34 @@
           };
 
           this.usuarioService.getByDni(dni).subscribe({
-            next: (usuario: any) => {
-              this.egresadoDni.idUsuario = usuario?.idUsuario || usuario?.IdUsuario;
-              this.cargarEncuestasDelEgresado(this.egresadoDni.idUsuario);
+            next: (respuestaUsuario: any) => {
+              const resultadoUsuario = respuestaUsuario && Object.prototype.hasOwnProperty.call(respuestaUsuario, 'data')
+                ? respuestaUsuario.data
+                : respuestaUsuario;
+              const usuario = Array.isArray(resultadoUsuario) ? resultadoUsuario[0] : resultadoUsuario;
+              const idUsuario = usuario?.idUsuario || usuario?.IdUsuario;
+
+              if (!idUsuario) {
+                this.errorDniRuc = 'Egresado no registrado.';
+                this.cargandoDni = false;
+                return;
+              }
+
+              this.egresadoDni.idUsuario = idUsuario;
+              this.cargarEncuestasDelEgresado(idUsuario);
             },
-            error: () => {
-              this.errorDniRuc = 'Egresado no registrado.';
+            error: (err) => {
+              this.errorDniRuc = err.status === 404
+                ? 'Egresado no registrado.'
+                : 'No se pudo consultar el registro del egresado. Intente nuevamente.';
               this.cargandoDni = false;
             }
           });
         },
-        error: () => {
-          this.errorDniRuc = 'Egresado no registrado.';
+        error: (err) => {
+          this.errorDniRuc = err.status === 404
+            ? 'El DNI ingresado no corresponde a un egresado.'
+            : 'No se pudo consultar la información. Intente nuevamente.';
           this.cargandoDni = false;
         }
       });
