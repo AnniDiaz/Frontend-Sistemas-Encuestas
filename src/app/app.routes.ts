@@ -2,7 +2,6 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { loginGuard } from './core/guards/login.guard';
 import { adminGuard } from './core/guards/admin.guard';
-import { EncuestaResponderComponent } from './features/encuesta-responder/encuesta-responder.component';
 export const routes: Routes = [
 
   // =========================
@@ -45,9 +44,23 @@ export const routes: Routes = [
 {
   path: 'reportes',
   loadComponent: () =>
-    import('./features/reportes/reportes.component')
-      .then(m => m.ReportesComponent),
-  canActivate: [adminGuard]
+    import('./features/reportes-layout/reportes-layout.component')
+      .then(m => m.ReportesLayoutComponent),
+  canActivate: [adminGuard],
+  canActivateChild: [adminGuard],
+  children: [
+    { path: '', redirectTo: 'analitica', pathMatch: 'full' },
+    {
+      path: 'analitica',
+      loadComponent: () => import('./features/reportes/reportes.component')
+        .then(m => m.ReportesComponent)
+    },
+    {
+      path: 'seguimiento',
+      loadComponent: () => import('./features/seguimiento/seguimiento.component')
+        .then(m => m.SeguimientoComponent)
+    }
+  ]
 },
 
 {
