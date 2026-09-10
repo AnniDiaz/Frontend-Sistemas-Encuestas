@@ -32,6 +32,9 @@
   } from 'chart.js';
 
   import Swal from 'sweetalert2';
+  import { EgresadoService } from '../../service/egresado.service';
+  import { UsuarioService } from '../../service/usuario.service';
+  import { RucService } from '../../service/ruc.service';
   const COLORS = {
     primary: '16A34A',
     dark: '0F172A',
@@ -112,6 +115,13 @@
     encuestaId: any = 'ALL';
     encuestas: any[] = [];
     carrera: string = '';
+    dniRuc: string = '';
+    errorDniRuc = '';
+    egresadoDni: any = null;
+    encuestasDni: any[] = [];
+    encuestasRespondidasDni = 0;
+    progresoDni = 0;
+    cargandoDni = false;
     escuelas: any[] = [];
 
     // Dashboard data
@@ -143,7 +153,11 @@
     constructor(
       private escuelaService: EscuelaService,
       private reporteService: ReporteService,
-      private encuestaStateService: EncuestaStateService
+      private encuestaStateService: EncuestaStateService,
+      private router: Router,
+      private egresadoService: EgresadoService,
+      private usuarioService: UsuarioService,
+      private rucService: RucService
     ) {}
 
     private readonly destruido = new Subject<void>();
@@ -182,6 +196,9 @@
       this.encuestaStateService.obtenerEncuestas().pipe(takeUntil(this.destruido)).subscribe({
         next: (data: any) => {
           this.encuestas = data;
+          if (this.egresadoDni?.idUsuario) {
+            this.cargarEncuestasDelEgresado(this.egresadoDni.idUsuario);
+          }
         },
         error: (err) => console.error(err)
       });
@@ -232,8 +249,187 @@
       this.cargarDashboard();
     }
 
+    onDniRucChange(): void {
+      this.egresadoDni = null;
+      this.encuestasDni = [];
+      this.encuestasRespondidasDni = 0;
+      this.progresoDni = 0;
+      this.cargandoDni = false;
+      this.errorDniRuc = '';
+    }
+
     onAplicarFiltro(): void {
+      const identificador = this.dniRuc.trim();
+
+      if (identificador && !/^\d{8}$|^\d{11}$/.test(identificador)) {
+        this.errorDniRuc = 'Ingrese un DNI de 8 dígitos o un RUC de 11 dígitos.';
+        return;
+      }
+
+      this.errorDniRuc = '';
+      if (identificador) {
+        this.cargarInformacionDni(identificador);
+      } else {
+        this.egresadoDni = null;
+        this.encuestasDni = [];
+        this.progresoDni = 0;
+      }
       this.cargarDashboard();
+    }
+
+    private cargarInformacionDni(dni: string): void {
+      this.cargandoDni = true;
+      this.egresadoDni = null;
+      this.encuestasDni = [];
+      this.encuestasRespondidasDni = 0;
+      this.progresoDni = 0;
+
+      if (dni.length === 11) {
+        this.cargarInformacionRuc(dni);
+        return;
+      }
+
+      this.egresadoService.buscarPorDni(dni).subscribe({
+        next: (respuesta: any) => {
+          const resultado = respuesta && Object.prototype.hasOwnProperty.call(respuesta, 'data')
+            ? respuesta.data
+            : respuesta;
+          const datos = Array.isArray(resultado) ? resultado[0] : resultado;
+
+          if (!datos || !(datos.Name || datos.name || datos.nombres)) {
+            this.errorDniRuc = 'El DNI ingresado no corresponde a un egresado.';
+            this.cargandoDni = false;
+            return;
+          }
+
+          this.egresadoDni = {
+            ...datos,
+            dni,
+            name: datos.Name || datos.name || datos.nombres || '',
+            paternalSurname: datos.PaternalSurname || datos.paternalSurname || '',
+            maternalSurname: datos.MaternalSurname || datos.maternalSurname || '',
+            escuelaProfesional: datos['Escuela Profesional'] || datos.escuelaProfesional,
+            facultad: datos.Facultad || datos.facultad,
+            fechaEgreso: datos['Fecha de Egreso'] || datos.fechaEgreso
+          };
+
+          this.usuarioService.getByDni(dni).subscribe({
+            next: (respuestaUsuario: any) => {
+              const resultadoUsuario = respuestaUsuario && Object.prototype.hasOwnProperty.call(respuestaUsuario, 'data')
+                ? respuestaUsuario.data
+                : respuestaUsuario;
+              const usuario = Array.isArray(resultadoUsuario) ? resultadoUsuario[0] : resultadoUsuario;
+              const idUsuario = usuario?.idUsuario || usuario?.IdUsuario;
+
+              if (!idUsuario) {
+                this.errorDniRuc = 'Egresado no registrado.';
+                this.cargandoDni = false;
+                return;
+              }
+
+              this.egresadoDni.idUsuario = idUsuario;
+              this.cargarEncuestasDelEgresado(idUsuario);
+            },
+            error: (err) => {
+              this.errorDniRuc = err.status === 404
+                ? 'Egresado no registrado.'
+                : 'No se pudo consultar el registro del egresado. Intente nuevamente.';
+              this.cargandoDni = false;
+            }
+          });
+        },
+        error: (err) => {
+          this.errorDniRuc = err.status === 404
+            ? 'El DNI ingresado no corresponde a un egresado.'
+            : 'No se pudo consultar la información. Intente nuevamente.';
+          this.cargandoDni = false;
+        }
+      });
+    }
+
+    private cargarInformacionRuc(ruc: string): void {
+      this.usuarioService.getByDni(ruc).subscribe({
+        next: (respuesta: any) => {
+          const usuario = respuesta?.data || respuesta;
+          const nombre = usuario?.name || usuario?.Name || usuario?.razonSocial || usuario?.razon_social;
+
+          if (nombre) {
+            this.mostrarEmpresa(usuario, ruc, nombre);
+            return;
+          }
+
+          this.consultarRucExterno(ruc, usuario);
+        },
+        error: () => this.consultarRucExterno(ruc)
+      });
+    }
+
+    private consultarRucExterno(ruc: string, usuario?: any): void {
+      this.rucService.consultarRuc(ruc).subscribe({
+        next: (respuesta: any) => {
+          const datos = respuesta?.data || respuesta;
+          const razonSocial = datos?.razon_social || datos?.razonSocial ||
+            datos?.nombre_o_razon_social || datos?.nombre || datos?.name;
+
+          if (!razonSocial) {
+            this.errorDniRuc = 'Empresa no registrada.';
+            this.cargandoDni = false;
+            return;
+          }
+
+          this.mostrarEmpresa({ ...usuario, ...datos }, ruc, razonSocial);
+        },
+        error: () => {
+          this.errorDniRuc = 'Empresa no registrada.';
+          this.cargandoDni = false;
+        }
+      });
+    }
+
+    private mostrarEmpresa(datos: any, ruc: string, nombre: string): void {
+      this.egresadoDni = {
+        ...datos,
+        name: nombre,
+        ruc: datos.ruc || datos.RUC || ruc,
+        tipo: 'empresa'
+      };
+      this.cargarEncuestasDelEgresado(
+        datos.idUsuario || datos.IdUsuario,
+        'empleador'
+      );
+    }
+
+    private cargarEncuestasDelEgresado(idUsuario: number | undefined, cargo = 'egresado'): void {
+      if (!idUsuario) {
+        this.encuestasDni = this.encuestas
+          .filter((encuesta: any) => encuesta.cargo?.toLowerCase() === cargo)
+          .map((encuesta: any) => ({ ...encuesta, respondida: false }));
+        this.encuestasRespondidasDni = 0;
+        this.progresoDni = 0;
+        this.cargandoDni = false;
+        return;
+      }
+
+      this.encuestaStateService.obtenerEncuestasRespondidas(idUsuario).subscribe({
+        next: (respondidas: number[]) => {
+          this.encuestasDni = this.encuestas
+            .filter((encuesta: any) => encuesta.cargo?.toLowerCase() === cargo)
+            .map((encuesta: any) => ({
+              ...encuesta,
+              respondida: respondidas.map(Number).includes(Number(encuesta.idEncuesta))
+            }));
+          const completadas = this.encuestasDni.filter(encuesta => encuesta.respondida).length;
+          this.encuestasRespondidasDni = completadas;
+          this.progresoDni = this.encuestasDni.length
+            ? Math.round((completadas / this.encuestasDni.length) * 100)
+            : 0;
+          this.cargandoDni = false;
+        },
+        error: () => {
+          this.errorDniRuc = 'No se pudieron cargar las encuestas del egresado.';
+          this.cargandoDni = false;
+        }
+      });
     }
 
     onCarreraChange(event: any): void {
