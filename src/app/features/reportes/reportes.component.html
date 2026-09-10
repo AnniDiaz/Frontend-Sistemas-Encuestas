@@ -67,10 +67,74 @@
       </select>
     </div>
 
+    <div class="filter-group">
+      <label for="filtro-dni-ruc">FILTRAR POR DNI / RUC</label>
+      <input
+        id="filtro-dni-ruc"
+        type="text"
+        inputmode="numeric"
+        maxlength="11"
+        [(ngModel)]="dniRuc"
+        (ngModelChange)="onDniRucChange()"
+        placeholder="DNI o RUC">
+    </div>
+
     <button class="btn-filter" (click)="onAplicarFiltro()">
       APLICAR <i class="fas fa-search"></i>
     </button>
   </div>
+
+  <section *ngIf="dniRuc && (egresadoDni || cargandoDni || errorDniRuc)" class="dni-result-card">
+    <div *ngIf="cargandoDni" class="dni-result-loading">Consultando información...</div>
+    <div *ngIf="egresadoDni && !cargandoDni" class="dni-result-content">
+      <div class="dni-avatar"><i class="fas" [class.fa-building]="egresadoDni.tipo === 'empresa'" [class.fa-user-graduate]="egresadoDni.tipo !== 'empresa'"></i></div>
+      <div class="dni-profile">
+        <h2>{{ egresadoDni.name }} {{ egresadoDni.paternalSurname }} {{ egresadoDni.maternalSurname }}</h2>
+        <p>{{ egresadoDni.tipo === 'empresa' ? 'RUC' : 'DNI' }}: {{ egresadoDni.tipo === 'empresa' ? egresadoDni.ruc : dniRuc }}</p>
+        <div class="dni-badges">
+          <span *ngIf="egresadoDni.escuelaProfesional">{{ egresadoDni.escuelaProfesional }}</span>
+          <span *ngIf="egresadoDni.facultad">{{ egresadoDni.facultad }}</span>
+        </div>
+        <small *ngIf="egresadoDni.fechaEgreso">Fecha de egreso: {{ egresadoDni.fechaEgreso | date:'dd/MM/yyyy':'UTC' }}</small>
+      </div>
+      <div class="dni-progress">
+        <span>PROGRESO</span>
+        <strong>{{ progresoDni }}%</strong>
+        <small>{{ encuestasRespondidasDni }} de {{ encuestasDni.length }} encuestas</small>
+      </div>
+    </div>
+    <div *ngIf="egresadoDni && !cargandoDni && !errorDniRuc" class="dni-surveys">
+      <div class="dni-surveys-heading">
+        <div>
+          <span class="section-eyebrow">SEGUIMIENTO</span>
+          <h3>Encuestas disponibles</h3>
+        </div>
+        <strong>{{ encuestasRespondidasDni }} de {{ encuestasDni.length }} completadas</strong>
+      </div>
+      <div *ngIf="encuestasDni.length" class="dni-progress-track" aria-label="Progreso de encuestas">
+        <span [style.width.%]="progresoDni"></span>
+      </div>
+      <div *ngIf="encuestasDni.length; else sinEncuestas" class="dni-survey-list">
+        <article *ngFor="let encuesta of encuestasDni; let i = index"
+          class="dni-survey-item"
+          [class.completed]="encuesta.respondida">
+          <div class="dni-survey-number">{{ i + 1 | number:'2.0-0' }}</div>
+          <div class="dni-survey-info">
+            <h4>{{ encuesta.nombre }}</h4>
+            <span>{{ encuesta.respondida ? 'Respuesta registrada' : 'Aún pendiente de respuesta' }}</span>
+          </div>
+          <div class="dni-survey-status">
+            <i class="fas" [class.fa-check-circle]="encuesta.respondida" [class.fa-clock]="!encuesta.respondida"></i>
+            {{ encuesta.respondida ? 'Respondida' : 'Pendiente' }}
+          </div>
+        </article>
+      </div>
+      <ng-template #sinEncuestas></ng-template>
+    </div>
+    <p *ngIf="!cargandoDni && errorDniRuc" class="dni-not-found" role="alert">
+      {{ errorDniRuc }}
+    </p>
+  </section>
 
   <!-- CARGANDO -->
   <div *ngIf="cargando" class="loading-overlay">

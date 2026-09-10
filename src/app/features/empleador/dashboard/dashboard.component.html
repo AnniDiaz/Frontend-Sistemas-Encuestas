@@ -17,7 +17,6 @@
           Plataforma institucional de empleadores
         </span>
       </div>
-
     </div>
 
     <button
@@ -39,7 +38,7 @@
   <!-- PERFIL EMPLEADOR -->
   <!-- ===================================== -->
 
-  @if (empleadorActual()) {
+  @if (empleadorActual() || egresadoEncontrado()) {
 
     <div class="perfil-card">
 
@@ -50,8 +49,11 @@
         <div class="perfil-left">
 
           <div class="perfil-avatar">
-
-           <i class="fas fa-building"></i>
+            @if (egresadoEncontrado()?.fotoUrl) {
+              <img [src]="egresadoEncontrado()?.fotoUrl" alt="Foto del egresado">
+            } @else {
+              <i class="fas fa-building"></i>
+            }
 
           </div>
 
@@ -60,27 +62,29 @@
             <h2 class="perfil-name">
 
           {{
-  empleadorActual()?.name ||
-  'Empresa'
+    (egresadoEncontrado()?.name + ' ' + egresadoEncontrado()?.paternalSurname + ' ' + egresadoEncontrado()?.maternalSurname).trim() ||
+  empleadorActual()?.name || 'Empresa'
 }}
 
             </h2>
 
             <div class="perfil-career">
-              Representante de organización
+              {{ egresadoEncontrado()?.escuelaProfesional || 'Representante de organización' }}
             </div>
 
             <div class="perfil-facultad">
 
-              RUC:
-              {{ empleadorActual()?.ruc || empleadorActual()?.dni }}
+              {{ egresadoEncontrado()?.ruc ? 'RUC' : (egresadoEncontrado() ? 'DNI' : 'RUC') }}:
+              {{ egresadoEncontrado()?.ruc || egresadoEncontrado()?.dni || empleadorActual()?.ruc || empleadorActual()?.dni }}
 
             </div>
 
-            <div class="perfil-facultad">
-
-
-            </div>
+            @if (egresadoEncontrado()?.facultad) {
+              <div class="perfil-facultad">Facultad: {{ egresadoEncontrado()?.facultad }}</div>
+            }
+            @if (egresadoEncontrado()?.fechaEgreso) {
+              <div class="perfil-facultad">Fecha de egreso: {{ egresadoEncontrado()?.fechaEgreso | date:'dd/MM/yyyy':'UTC' }}</div>
+            }
 
           </div>
 
@@ -111,12 +115,38 @@
 
       <div class="encuestas-wrapper">
 
-        @if (!cargandoRuc) {
-
           <div class="encuestas-header">
             <h2>Encuestas disponibles</h2>
-            <p>Selecciona un instrumento para comenzar</p>
+            <p>{{ egresadoEncontrado() ? 'Encuestas disponibles para el egresado' : 'Selecciona un instrumento para comenzar' }}</p>
           </div>
+          <div class="filter-item">
+          <label class="filter-label" for="buscar-dni-ruc">BUSCAR DNI / RUC</label>
+            <div class="search-input-group">
+              <input
+                id="buscar-dni-ruc"
+                type="text"
+                inputmode="numeric"
+                maxlength="11"
+                [(ngModel)]="searchTerm"
+                placeholder="Ej: 72615243 o 20123456789"
+                class="filter-input" />
+              <button type="button" (click)="buscarEgresado()" class="btn-search">Buscar</button>
+            </div>
+            @if (errorBusqueda) {
+              <p class="error-busqueda">{{ errorBusqueda }}</p>
+            }
+            @if (cargandoBusqueda) {
+              <p class="estado-busqueda">Buscando...</p>
+            }
+          </div>
+
+        <!-- Bloque para mostrar la respuesta en pantalla al buscar -->
+            @if (egresadoEncontrado()) {
+            <div class="egresado-card">
+            <h3>{{ egresadoEncontrado()?.nombres }} {{ egresadoEncontrado()?.apellidos }}</h3>
+          <p><strong>{{ egresadoEncontrado()?.ruc ? 'RUC' : 'DNI' }}:</strong> {{ egresadoEncontrado()?.ruc || egresadoEncontrado()?.dni }}</p>
+          </div>
+          }
 
           <div class="encuestas-grid">
 
@@ -145,8 +175,6 @@
             }
 
           </div>
-
-        }
 
       </div>
 

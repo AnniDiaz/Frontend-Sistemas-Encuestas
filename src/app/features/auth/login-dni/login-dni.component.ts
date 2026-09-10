@@ -55,14 +55,16 @@ export class LoginDniComponent implements OnInit {
     // =========================
     if (this.rol === 'empleador') {
 
-      if (this.dniValue.trim().length !== 11) {
+      const ruc = this.dniValue.trim();
+
+      if (!/^\d{11}$/.test(ruc)) {
 
         this.triggerShake('RUC inválido');
         return;
       }
 
       this.usuarioService
-        .getByDni(this.dniValue)
+        .getByDni(ruc)
         .subscribe({
 
           next: (empresa: any) => {
@@ -90,7 +92,8 @@ export class LoginDniComponent implements OnInit {
 
             const nuevoEmpleador = {
 
-              dni: this.dniValue,
+              dni: ruc,
+              ruc,
 
               name: '',
 

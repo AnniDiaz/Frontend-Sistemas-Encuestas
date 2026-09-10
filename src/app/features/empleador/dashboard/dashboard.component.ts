@@ -47,6 +47,64 @@ export class DashboardComponent implements OnInit {
   email = '';
 
   // =========================
+  // BÚSQUEDA DE EGRESADO / FILTRO
+  // =========================
+  searchTerm: string = '';
+  egresadoEncontrado = signal<any>(null);
+  cargandoBusqueda = false;
+  errorBusqueda = '';
+  rolEncuestas = 'empleador';
+
+  buscarEgresado(): void {
+    const termino = this.searchTerm.trim();
+    if (!/^\d{8}$|^\d{11}$/.test(termino)) {
+      this.errorBusqueda = 'Ingrese un DNI de 8 dígitos o un RUC de 11 dígitos.';
+      return;
+    }
+
+    this.cargandoBusqueda = true;
+    this.errorBusqueda = '';
+    this.egresadoEncontrado.set(null);
+
+    this.http.get<any>(`/api/egresados/buscar?q=${encodeURIComponent(termino)}`).subscribe({
+      next: (data) => {
+        const egresado = Array.isArray(data?.data)
+          ? data.data[0]
+          : data?.data || data;
+        if (!egresado) {
+          this.errorBusqueda = 'No se encontró información para el DNI/RUC ingresado.';
+          this.cargandoBusqueda = false;
+          return;
+        }
+
+        const perfil = {
+          ...egresado,
+          dni: egresado.dni || egresado.DNI || (termino.length === 8 ? termino : ''),
+          ruc: egresado.ruc || egresado.RUC || (termino.length === 11 ? termino : ''),
+          idUsuario: egresado.idUsuario || egresado.IdUsuario,
+          name: egresado.name || egresado.Name || egresado.nombres || '',
+          paternalSurname: egresado.paternalSurname || egresado.PaternalSurname || '',
+          maternalSurname: egresado.maternalSurname || egresado.MaternalSurname || '',
+          escuelaProfesional: egresado.escuelaProfesional || egresado['Escuela Profesional'],
+          facultad: egresado.facultad || egresado.Facultad,
+          fechaEgreso: egresado.fechaEgreso || egresado['Fecha Egreso'] || egresado['Fecha de Egreso']
+        };
+
+        this.egresadoEncontrado.set(perfil);
+        this.rolEncuestas = 'egresado';
+        this.encuestasRespondidas.set([]);
+        this.cargarEncuestasRespondidas(perfil.idUsuario);
+        this.cargandoBusqueda = false;
+      },
+      error: (err) => {
+        console.error('Error al buscar egresado:', err);
+        this.errorBusqueda = 'No se encontró información para el DNI/RUC ingresado.';
+        this.cargandoBusqueda = false;
+      }
+    });
+  }
+
+  // =========================
   // ENCUESTAS
   // =========================
 
@@ -93,7 +151,7 @@ ngOnInit(): void {
 
     return;
   }
-
+  this.cargandoRuc = false;
   this.cargarEncuestasRespondidas();
 }
 
@@ -154,10 +212,12 @@ ngOnInit(): void {
   // CARGAR RESPONDIDAS
   // =========================
 
-  cargarEncuestasRespondidas(): void {
+  cargarEncuestasRespondidas(idUsuario = this.empleadorActual()?.idUsuario): void {
 
-    const idUsuario =
-      this.empleadorActual()?.idUsuario;
+    if (!idUsuario) {
+      this.cargarEncuestas();
+      return;
+    }
 
     this.stateService
       .obtenerEncuestasRespondidas(
@@ -229,9 +289,7 @@ ngOnInit(): void {
   cargarEncuestas(): void {
 
     const rolUsuario =
-      localStorage.getItem(
-        'rolUsuario'
-      );
+      this.rolEncuestas || localStorage.getItem('rolUsuario');
 
     this.stateService
       .obtenerEncuestas()
@@ -244,8 +302,7 @@ ngOnInit(): void {
 
           const filtradas = data
             .filter((e: any) =>
-              e.cargo?.toLowerCase() ===
-              rolUsuario?.toLowerCase()
+              e.cargo?.toLowerCase() === rolUsuario?.toLowerCase()
             )
             .map((e: any) => ({
               ...e,

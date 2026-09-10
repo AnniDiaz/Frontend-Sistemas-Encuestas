@@ -218,7 +218,7 @@
   margin-top: 18px;
   padding: 18px;
   display: grid;
-  grid-template-columns: 60px 1fr 1fr 160px;
+  grid-template-columns: 60px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) 160px;
   gap: 16px;
   align-items: center;
 }
@@ -232,6 +232,7 @@
 .filter-group {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .filter-group label {
@@ -246,12 +247,36 @@
 }
 
 .filter-group select {
+  width: 100%;
+  box-sizing: border-box;
   height: 42px;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
   background: #f9fafb;
   padding: 0 12px;
   font-size: 13px;
+}
+
+.filter-group input {
+  width: 100%;
+  height: 42px;
+  box-sizing: border-box;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+.filter-group input:focus {
+  outline: none;
+  border-color: #16a34a;
+}
+
+.filter-error {
+  margin-top: 5px;
+  color: #b42318;
+  font-size: 11px;
 }
 
 .filter-group select:focus {
@@ -276,6 +301,226 @@
 
 .btn-filter:hover {
   opacity: 0.9;
+}
+
+.dni-result-card {
+  margin-top: 18px;
+  padding: 20px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04);
+}
+
+.dni-result-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.dni-avatar {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 56px;
+  border-radius: 14px;
+  background: #dcfce7;
+  color: #16a34a;
+  font-size: 24px;
+}
+
+.dni-profile {
+  flex: 1;
+  min-width: 0;
+}
+
+.dni-profile h2 {
+  margin: 0 0 5px;
+  font-size: 18px;
+}
+
+.dni-profile p,
+.dni-profile small,
+.dni-surveys p {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.dni-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 8px 0;
+}
+
+.dni-badges span,
+.dni-survey-list span {
+  padding: 5px 9px;
+  border: 1px solid #dbe5ef;
+  border-radius: 999px;
+  color: #166534;
+  background: #f0fdf4;
+  font-size: 11px;
+}
+
+.dni-progress {
+  min-width: 120px;
+  text-align: center;
+}
+
+.dni-progress span,
+.dni-progress small {
+  display: block;
+  color: #94a3b8;
+  font-size: 10px;
+}
+
+.dni-progress strong {
+  display: block;
+  margin: 3px 0;
+  color: #0f172a;
+  font-size: 28px;
+}
+
+.dni-surveys {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #eef2f7;
+}
+
+.dni-surveys-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+.section-eyebrow {
+  display: block;
+  margin-bottom: 3px;
+  color: #16a34a;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.dni-surveys h3 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.dni-surveys-heading > strong {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dni-not-found {
+  margin: 0;
+  color: #b42318;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.dni-progress-track {
+  height: 6px;
+  margin-bottom: 14px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.dni-progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #16a34a;
+}
+
+.dni-survey-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.dni-survey-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 78px;
+  padding: 14px;
+  border: 1px solid #cbd5e1;
+  border-left: 4px solid #94a3b8;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.dni-survey-item.completed {
+  border-color: #86efac;
+  border-left-color: #16a34a;
+  background: #f0fdf4;
+}
+
+.dni-survey-number {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  place-items: center;
+  border-radius: 8px;
+  background: #e2e8f0;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.completed .dni-survey-number {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.dni-survey-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.dni-survey-info h4 {
+  overflow: hidden;
+  margin: 0 0 3px;
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dni-survey-info span {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.dni-survey-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.completed .dni-survey-status {
+  color: #15803d;
+}
+
+.dni-result-loading {
+  color: #64748b;
+  font-size: 14px;
 }
 
 /* =========================
@@ -609,6 +854,24 @@
 @media (max-width: 640px) {
   .kpi-grid {
     grid-template-columns: 1fr;
+  }
+
+  .dni-surveys-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .dni-survey-list {
+    grid-template-columns: 1fr;
+  }
+
+  .dni-survey-status {
+    font-size: 0;
+  }
+
+  .dni-survey-status i {
+    font-size: 14px;
   }
 
   .filters-card {
