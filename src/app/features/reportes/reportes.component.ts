@@ -35,7 +35,10 @@
   import { EgresadoService } from '../../service/egresado.service';
   import { UsuarioService } from '../../service/usuario.service';
   import { RucService } from '../../service/ruc.service';
+<<<<<<< HEAD
 
+=======
+>>>>>>> 9e1e1bf3d5d7a76ccaa4617d76a6d25b99ec47a2
   const COLORS = {
     primary: '16A34A',
     dark: '0F172A',
@@ -155,6 +158,10 @@
       private escuelaService: EscuelaService,
       private reporteService: ReporteService,
       private encuestaStateService: EncuestaStateService,
+<<<<<<< HEAD
+=======
+      private router: Router,
+>>>>>>> 9e1e1bf3d5d7a76ccaa4617d76a6d25b99ec47a2
       private egresadoService: EgresadoService,
       private usuarioService: UsuarioService,
       private rucService: RucService
@@ -199,7 +206,11 @@
         next: (data: any) => {
           this.encuestas = data;
           if (this.egresadoDni?.idUsuario) {
+<<<<<<< HEAD
             this.cargarEncuestasDelEgresado(this.egresadoDni.idUsuario, this.egresadoDni.tipo === 'empresa' ? 'empleador' : 'egresado');
+=======
+            this.cargarEncuestasDelEgresado(this.egresadoDni.idUsuario);
+>>>>>>> 9e1e1bf3d5d7a76ccaa4617d76a6d25b99ec47a2
           }
         },
         error: (err) => console.error(err)
@@ -252,7 +263,10 @@
     }
 
     onDniRucChange(): void {
+<<<<<<< HEAD
       this.cancelarBusquedaDni.next();
+=======
+>>>>>>> 9e1e1bf3d5d7a76ccaa4617d76a6d25b99ec47a2
       this.egresadoDni = null;
       this.encuestasDni = [];
       this.encuestasRespondidasDni = 0;
@@ -263,8 +277,11 @@
 
     onAplicarFiltro(): void {
       const identificador = this.dniRuc.trim();
+<<<<<<< HEAD
       this.onDniRucChange();
       this.dniRuc = identificador;
+=======
+>>>>>>> 9e1e1bf3d5d7a76ccaa4617d76a6d25b99ec47a2
 
       if (identificador && !/^\d{8}$|^\d{11}$/.test(identificador)) {
         this.errorDniRuc = 'Ingrese un DNI de 8 dígitos o un RUC de 11 dígitos.';
@@ -294,7 +311,11 @@
         return;
       }
 
+<<<<<<< HEAD
       this.egresadoService.buscarPorDni(dni).pipe(takeUntil(this.destruido), takeUntil(this.cancelarBusquedaDni)).subscribe({
+=======
+      this.egresadoService.buscarPorDni(dni).subscribe({
+>>>>>>> 9e1e1bf3d5d7a76ccaa4617d76a6d25b99ec47a2
         next: (respuesta: any) => {
           const resultado = respuesta && Object.prototype.hasOwnProperty.call(respuesta, 'data')
             ? respuesta.data
@@ -318,7 +339,11 @@
             fechaEgreso: datos['Fecha de Egreso'] || datos.fechaEgreso
           };
 
+<<<<<<< HEAD
           this.usuarioService.getByDni(dni).pipe(takeUntil(this.destruido), takeUntil(this.cancelarBusquedaDni)).subscribe({
+=======
+          this.usuarioService.getByDni(dni).subscribe({
+>>>>>>> 9e1e1bf3d5d7a76ccaa4617d76a6d25b99ec47a2
             next: (respuestaUsuario: any) => {
               const resultadoUsuario = respuestaUsuario && Object.prototype.hasOwnProperty.call(respuestaUsuario, 'data')
                 ? respuestaUsuario.data
@@ -353,7 +378,11 @@
     }
 
     private cargarInformacionRuc(ruc: string): void {
+<<<<<<< HEAD
       this.usuarioService.getByDni(ruc).pipe(takeUntil(this.destruido), takeUntil(this.cancelarBusquedaDni)).subscribe({
+=======
+      this.usuarioService.getByDni(ruc).subscribe({
+>>>>>>> 9e1e1bf3d5d7a76ccaa4617d76a6d25b99ec47a2
         next: (respuesta: any) => {
           const usuario = respuesta?.data || respuesta;
           const nombre = usuario?.name || usuario?.Name || usuario?.razonSocial || usuario?.razon_social;
@@ -370,7 +399,11 @@
     }
 
     private consultarRucExterno(ruc: string, usuario?: any): void {
+<<<<<<< HEAD
       this.rucService.consultarRuc(ruc).pipe(takeUntil(this.destruido), takeUntil(this.cancelarBusquedaDni)).subscribe({
+=======
+      this.rucService.consultarRuc(ruc).subscribe({
+>>>>>>> 9e1e1bf3d5d7a76ccaa4617d76a6d25b99ec47a2
         next: (respuesta: any) => {
           const datos = respuesta?.data || respuesta;
           const razonSocial = datos?.razon_social || datos?.razonSocial ||
@@ -415,7 +448,11 @@
         return;
       }
 
+<<<<<<< HEAD
       this.encuestaStateService.obtenerEncuestasRespondidas(idUsuario).pipe(takeUntil(this.destruido), takeUntil(this.cancelarBusquedaDni)).subscribe({
+=======
+      this.encuestaStateService.obtenerEncuestasRespondidas(idUsuario).subscribe({
+>>>>>>> 9e1e1bf3d5d7a76ccaa4617d76a6d25b99ec47a2
         next: (respondidas: number[]) => {
           this.encuestasDni = this.encuestas
             .filter((encuesta: any) => encuesta.cargo?.toLowerCase() === cargo)

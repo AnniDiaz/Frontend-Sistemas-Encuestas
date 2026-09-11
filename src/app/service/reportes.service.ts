@@ -50,7 +50,11 @@ export class ReporteService {
       params = params.set('facultad', facultad.trim());
     }
 
+<<<<<<< HEAD
     if (dni && dni.trim()) {
+=======
+    if (dni && dni.trim() !== '') {
+>>>>>>> 9e1e1bf3d5d7a76ccaa4617d76a6d25b99ec47a2
       params = params.set('dni', dni.trim());
     }
 
