@@ -245,9 +245,6 @@
   font-size: 13px;
 }
 
-<<<<<<< HEAD
-.filter-group input:focus,
-=======
 .filter-group input:focus {
   outline: none;
   border-color: #16a34a;
@@ -259,7 +256,6 @@
   font-size: 11px;
 }
 
->>>>>>> 9e1e1bf3d5d7a76ccaa4617d76a6d25b99ec47a2
 .filter-group select:focus {
   outline: none;
   border-color: #16a34a;
