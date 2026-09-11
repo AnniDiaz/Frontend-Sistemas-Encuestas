@@ -6,7 +6,7 @@ import { API_EGRESADO_BASE } from '../shared/components/progress-bar/url';
 @Injectable({ providedIn: 'root' })
 export class EgresadoService {
 
-  private baseUrl = `${API_EGRESADO_BASE}/api`;
+  private baseUrl = `${API_EGRESADO_BASE.replace(/\/+$/, '').replace(/\/api$/, '')}/api`;
 
   constructor(private http: HttpClient) {}
 

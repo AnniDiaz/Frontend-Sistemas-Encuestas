@@ -38,7 +38,7 @@ export class ReporteService {
     return this.http.get<any>(url);
   }
 
-  obtenerDashboard(idEncuesta?: number, facultad?: string): Observable<DashboardResponse> {
+  obtenerDashboard(idEncuesta?: number, facultad?: string, dni?: string): Observable<DashboardResponse> {
 
     let params = new HttpParams();
 
@@ -48,6 +48,10 @@ export class ReporteService {
 
     if (facultad && facultad.trim() !== '') {
       params = params.set('facultad', facultad.trim());
+    }
+
+    if (dni && dni.trim()) {
+      params = params.set('dni', dni.trim());
     }
 
     return this.http.get<DashboardResponse>(this.dashboardApi, { params });
