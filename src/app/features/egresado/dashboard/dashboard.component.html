@@ -139,7 +139,10 @@
                 </h3>
 
                 <p>{{ encuesta.cargo }}</p>
-
+                <div class="poblacion-box">
+                  <span class="poblacion-label">Población objetivo:</span>
+                  <p class="poblacion-desc">{{ obtenerPoblacion(encuesta) }}</p>
+                </div>
                 <div class="encuesta-footer">
 
                   <button class="btn-start"

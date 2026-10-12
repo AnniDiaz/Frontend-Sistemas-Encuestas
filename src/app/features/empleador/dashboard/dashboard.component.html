@@ -133,6 +133,10 @@
                 <h3 class="nombre_encuesta">{{ encuesta.nombre }}</h3>
 
                 <p class="encuesta-desc">{{ encuesta.cargo }}</p>
+                <div class="poblacion-box">
+                  <span class="poblacion-label">Población objetivo:</span>
+                  <p class="poblacion-desc">{{ obtenerPoblacion(encuesta) }}</p>
+                </div>
 
                 <div class="encuesta-footer">
                   <button class="btn-start" type="button" [disabled]="encuesta.respondida">

@@ -7,6 +7,7 @@ import { EncuestaStateService } from '../../../core/services/encuesta-state.serv
 import Swal from 'sweetalert2';
 
 import { HttpClient } from '@angular/common/http';
+import { obtenerPoblacionEncuesta } from '../../../shared/utils/poblacion.util';
 
 @Component({
   selector: 'app-dashboard-empleador',
@@ -270,6 +271,11 @@ const payload = {
   }
 
 porcentaje = signal(0);
+
+  obtenerPoblacion(encuesta: any): string {
+    return obtenerPoblacionEncuesta(encuesta);
+  }
+
   logout(): void {
     this.stateService.logout();
     localStorage.clear();

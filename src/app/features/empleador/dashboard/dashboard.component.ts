@@ -8,6 +8,7 @@ import Swal from 'sweetalert2';
 
 import { EncuestaStateService } from '../../../core/services/encuesta-state.service';
 import { UsuarioService } from '../../../service/usuario.service';
+import { obtenerPoblacionEncuesta } from '../../../shared/utils/poblacion.util';
 
 @Component({
   selector: 'app-dashboard-empleador',
@@ -295,6 +296,10 @@ porcentajeProgreso = signal(0);
       ['/empleador/encuesta', encuesta.idEncuesta],
       { state: { nombreEncuesta: encuesta.nombre } }
     );
+  }
+
+  obtenerPoblacion(encuesta: any): string {
+    return obtenerPoblacionEncuesta(encuesta);
   }
 
   logout(): void {
