@@ -58,7 +58,7 @@ ngOnInit(): void {
   });
 }
 cargarFotoReniec(dni: string): void {
-  const url = `/reniec/wsdl/wsdl_reniec.php?dni=${dni}&downloadJSON=true`;
+  const url = `/reniec/wsdl_reniec.php?dni=${dni}&downloadJSON=true`;
 
   this.http.get<any>(url).subscribe({
     next: (response) => {
